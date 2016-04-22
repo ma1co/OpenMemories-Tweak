@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Currently active languages:"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="40sp"
+        android:padding="5sp"
+        android:id="@+id/langTextView"/>
+
+    <Button
+        android:layout_width="250sp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Activate Japanese only (hide menu)"
+        android:onClick="onActivateJapaneseButtonClicked"/>
+
+    <Button
+        android:layout_width="250sp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Activate English only (for testing)"
+        android:onClick="onActivateEnglishButtonClicked"/>
+
+    <Button
+        android:layout_width="250sp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Activate all"
+        android:onClick="onActivateAllButtonClicked"/>
+
+</LinearLayout>

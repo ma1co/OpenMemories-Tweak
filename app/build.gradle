@@ -1,0 +1,24 @@
+apply plugin: 'com.android.model.application'
+
+model {
+    android {
+        compileSdkVersion = 10
+        buildToolsVersion = '23.0.3'
+
+        defaultConfig {
+            applicationId = 'com.github.ma1co.openmemories.tweak'
+            minSdkVersion.apiLevel = 10
+            targetSdkVersion.apiLevel = 10
+            sourceCompatibility = JavaVersion.VERSION_1_6
+            targetCompatibility = JavaVersion.VERSION_1_6
+            versionCode "git -C ${projectDir} rev-list --first-parent --count HEAD".execute().text.trim().toInteger()
+            versionName "git -C ${projectDir} describe --always --tags --dirty".execute().text.trim().replaceAll("^v", "")
+        }
+        ndk {
+            moduleName = 'tweak'
+            CFlags.addAll(['-Wall', '-Werror', '-std=gnu11'])
+            ldFlags.addAll(['-losal_uipc'])
+            abiFilters.add('armeabi-v7a')
+        }
+    }
+}
