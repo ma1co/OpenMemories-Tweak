@@ -15,6 +15,16 @@ public class MainActivity extends TabActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable exp) {
+                Logger.error("UncaughtExceptionHandler", exp);
+                saveLog();
+                System.exit(0);
+            }
+        });
+
         addTab("video", "Video", android.R.drawable.ic_menu_camera, VideoActivity.class);
         addTab("lang", "Languages", android.R.drawable.ic_menu_mapmode, LanguageActivity.class);
         addTab("protection", "Protection", android.R.drawable.ic_lock_lock, ProtectionActivity.class);
@@ -37,6 +47,10 @@ public class MainActivity extends TabActivity {
     protected void onPause() {
         super.onPause();
         Logger.info("MainActivity", "application end");
+        saveLog();
+    }
+
+    protected void saveLog() {
         try {
             FileWriter writer = new FileWriter(LOG_FILE, true);
             writer.write(Logger.getLogs() + "\n");

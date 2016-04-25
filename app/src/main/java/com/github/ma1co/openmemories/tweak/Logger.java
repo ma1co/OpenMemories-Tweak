@@ -1,5 +1,8 @@
 package com.github.ma1co.openmemories.tweak;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 public class Logger {
     private static final StringBuffer buffer = new StringBuffer();
 
@@ -23,11 +26,17 @@ public class Logger {
         log("ERROR", tag, msg);
     }
 
-    public static void error(String tag, String msg, Exception exp) {
-        error(tag, (msg.isEmpty() ? "" : msg + ": ") + exp.getClass().getSimpleName() + " (" + exp.getMessage() + ")");
+    public static void error(String tag, String msg, Throwable exp) {
+        StringWriter sw = new StringWriter();
+        if (!msg.isEmpty()) {
+            sw.append(msg);
+            sw.append(": ");
+        }
+        exp.printStackTrace(new PrintWriter(sw));
+        error(tag, sw.toString().trim());
     }
 
-    public static void error(String tag, Exception exp) {
+    public static void error(String tag, Throwable exp) {
         error(tag, "", exp);
     }
 }
