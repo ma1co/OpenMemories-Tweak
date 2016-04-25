@@ -4,7 +4,7 @@ An app to unlock settings on your Sony camera.
 * Unlock the language menu
 
 ## Installation
-Install it here: [sony-pmca.appspot.com](https://sony-pmca.appspot.com/apps) (Only Internet Explorer is supported, sorry)
+Install it here: [sony-pmca.appspot.com](https://sony-pmca.appspot.com/apps) (Only Internet Explorer and Safari are supported)
 
 ## Compatibility
 This app should be compatible with all Sony cameras supporting PlayMemories Camera Apps (PMCA). See [here](https://github.com/ma1co/OpenMemories-Framework/blob/master/docs/Cameras.md) for a full list.
