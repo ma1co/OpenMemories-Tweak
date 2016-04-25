@@ -62,6 +62,7 @@ void Java_com_github_ma1co_openmemories_tweak_Backup_nativeProtect(JNIEnv *env, 
 void Java_com_github_ma1co_openmemories_tweak_Backup_nativeSetId1(JNIEnv *env, jclass clazz, jint value)
 {
     int32_t err = Backup_senser_cmd_ID1(value);
+    // Disable the error check for now, this fails on android 4 since we can't write /setting/Backup.bin
     if (err)
-        throw_exception(env, "Backup_senser_cmd_ID1 failed");
+        {}// throw_exception(env, "Backup_senser_cmd_ID1 failed");
 }
