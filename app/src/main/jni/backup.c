@@ -48,9 +48,9 @@ int32_t Backup_write(uint32_t id, void *addr)
     return backup_sync_msg(8, 3, id >> 16, id, addr);
 }
 
-int32_t Backup_sync_all()
+void Backup_sync_all()
 {
-    return backup_sync_msg(15, 0);
+    backup_sync_msg(15, 0);
 }
 
 int32_t Backup_protect(uint32_t mode, void *overwrite_data, uint32_t size)

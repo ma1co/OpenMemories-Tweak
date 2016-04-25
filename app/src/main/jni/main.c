@@ -47,9 +47,7 @@ void Java_com_github_ma1co_openmemories_tweak_Backup_nativeWrite(JNIEnv *env, jc
 
 void Java_com_github_ma1co_openmemories_tweak_Backup_nativeSync(JNIEnv *env, jclass clazz)
 {
-    int32_t err = Backup_sync_all();
-    if (err)
-        throw_exception(env, "Backup_sync_all failed");
+    Backup_sync_all();
 }
 
 void Java_com_github_ma1co_openmemories_tweak_Backup_nativeProtect(JNIEnv *env, jclass clazz, jint mode, jbyteArray data)
