@@ -18,7 +18,7 @@ model {
             moduleName = 'tweak'
             CFlags.addAll(['-Wall', '-Werror', '-std=gnu11'])
             ldFlags.addAll(['-losal_uipc'])
-            abiFilters.add('armeabi-v7a')
+            abiFilters.add('armeabi')
         }
     }
 }
