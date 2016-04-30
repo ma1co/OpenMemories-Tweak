@@ -1,68 +1,91 @@
-#include <jni.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "backup.h"
 
-static void throw_exception(JNIEnv *env, const char *message)
+int patch_region(const char *newRegion, char **oldRegion)
 {
-    (*env)->ThrowNew(env, (*env)->FindClass(env, "com/github/ma1co/openmemories/tweak/NativeException"), message);
+    printf("Reading backup\n");
+
+    FILE *f = fopen("/setting/Backup.bin", "rb");
+    if (!f) {
+        printf("fopen failed\n");
+        return -1;
+    }
+
+    fseek(f, 0, SEEK_END);
+    size_t len = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    void *data = malloc(len);
+    if (!data) {
+        printf("malloc failed\n");
+        return -1;
+    }
+
+    fread(data, 1, len, f);
+    fclose(f);
+
+    void *region = data + 0xC0;
+    if (oldRegion) {
+        *oldRegion = malloc(strlen(region) + 1);
+        strcpy(*oldRegion, region);
+    }
+    strcpy(region, newRegion);
+
+    printf("Calling Backup_protect\n");
+    int err = Backup_protect(0, data, len);
+
+    free(data);
+
+    if (err) {
+        printf("Backup_protect failed\n");
+        return -1;
+    }
+
+    return 0;
 }
 
-jint Java_com_github_ma1co_openmemories_tweak_Backup_nativeGetSize(JNIEnv *env, jclass clazz, jint id)
+int main(int argc, char *argv[])
 {
-    int32_t size = Backup_get_datasize(id);
-    if (size < 0)
-        throw_exception(env, "Backup_get_datasize failed");
-    return size;
-}
+    if (argc != 2) {
+        printf("Usage: %s 1|0\n", argv[0]);
+        return -1;
+    }
+    uint32_t flag = atoi(argv[1]) ? 1 : 0;
 
-jint Java_com_github_ma1co_openmemories_tweak_Backup_nativeGetAttribute(JNIEnv *env, jclass clazz, jint id)
-{
-    int32_t attr = Backup_get_attribute(id);
-    if (attr < 0)
-        throw_exception(env, "Backup_get_attribute failed");
-    return attr;
-}
-
-jbyteArray Java_com_github_ma1co_openmemories_tweak_Backup_nativeRead(JNIEnv *env, jclass clazz, jint id)
-{
-    jbyteArray data = (*env)->NewByteArray(env, Backup_get_datasize(id));
-    jbyte *data_ptr = (*env)->GetByteArrayElements(env, data, NULL);
-    int32_t bytes_read = Backup_read(id, data_ptr);
-    (*env)->ReleaseByteArrayElements(env, data, data_ptr, 0);
-    if (bytes_read < 0)
-        throw_exception(env, "Backup_read failed");
-    return data;
-}
-
-void Java_com_github_ma1co_openmemories_tweak_Backup_nativeWrite(JNIEnv *env, jclass clazz, jint id, jbyteArray data)
-{
-    if ((*env)->GetArrayLength(env, data) != Backup_get_datasize(id))
-        throw_exception(env, "Wrong array size");
-    jbyte *data_ptr = (*env)->GetByteArrayElements(env, data, NULL);
-    int32_t bytes_written = Backup_write(id, data_ptr);
-    (*env)->ReleaseByteArrayElements(env, data, data_ptr, 0);
-    if (bytes_written < 0)
-        throw_exception(env, "Backup_write failed");
-}
-
-void Java_com_github_ma1co_openmemories_tweak_Backup_nativeSync(JNIEnv *env, jclass clazz)
-{
+    printf("Saving backup\n");
     Backup_sync_all();
-}
 
-void Java_com_github_ma1co_openmemories_tweak_Backup_nativeProtect(JNIEnv *env, jclass clazz, jint mode, jbyteArray data)
-{
-    jbyte *data_ptr = (*env)->GetByteArrayElements(env, data, NULL);
-    int32_t err = Backup_protect(mode, data_ptr, (*env)->GetArrayLength(env, data));
-    (*env)->ReleaseByteArrayElements(env, data, data_ptr, 0);
-    if (err)
-        throw_exception(env, "Backup_protect failed");
-}
+    char *region = NULL;
+    if (!flag) {
+        printf("Patching region\n");
+        int err = patch_region("", &region);
+        if (err) {
+            printf("patch_region failed\n");
+            return -1;
+        }
+    }
 
-void Java_com_github_ma1co_openmemories_tweak_Backup_nativeSetId1(JNIEnv *env, jclass clazz, jint value)
-{
-    int32_t err = Backup_senser_cmd_ID1(value);
-    // Disable the error check for now, this fails on android 4 since we can't write /setting/Backup.bin
-    if (err)
-        {}// throw_exception(env, "Backup_senser_cmd_ID1 failed");
+    printf("Calling Backup_senser_cmd_ID1(%d)\n", flag);
+    int err = Backup_senser_cmd_ID1(flag);
+
+    if (region) {
+        printf("Resetting region\n");
+        int err = patch_region(region, NULL);
+        free(region);
+        if (err) {
+            printf("patch_region failed\n");
+            return -1;
+        }
+    }
+
+    if (err) {
+        printf("Backup_senser_cmd_ID1 failed\n");
+        return -1;
+    }
+
+    printf("Done\n");
+
+    return 0;
 }

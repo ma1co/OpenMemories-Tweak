@@ -46,52 +46,55 @@ public class ProtectionActivity extends BaseActivity {
         }
     }
 
-    protected void writeProtection(boolean enabled) throws BackupCheckException, IOException, NativeException {
+    protected void writeProtection(boolean enabled) throws BackupCheckException, InterruptedException, IOException, NativeException {
         Logger.info("writeProtection", "setting protection to " + enabled);
-        Backup.setProtection(enabled);
+
+        Backup.cleanup();
+        try {
+            // Let's try to save the current settings to the disk. Since we're running in a chrooted
+            // environment, /setting is actually interpreted as /android/setting, a folder which
+            // doesn't exist. Luckily, on android 2, we have write access to /android and we can
+            // create that folder. On android 4, this fails and we catch the exception. If this call
+            // succeeds, it writes the settings to /android/setting/Backup.bin and
+            // /android/setting/Backup.bak.
+            Backup.save();
+        } catch (Exception e) {
+            Logger.info("writeProtection", "Backup.save() failed");
+        }
+        try {
+            // Let's try to set the protection flag. On older cameras (android 2?), this needs
+            // /android/setting/Backup.bin to exist (we've just written it above), otherwise the
+            // flag isn't set and an exception is thrown. On newer cameras (android 4?), an
+            // exception is thrown if the file doesn't exist, but the flag is still set.
+            // On Japanese-only cameras (region J1), we can only enable protection using this
+            // method, disabling it is impossible (this call will fail silently without throwing an
+            // exception).
+            // We just catch all exceptions and check afterwards if the flag was set.
+            Backup.setProtection(enabled);
+        } catch (Exception e) {
+            Logger.info("writeProtection", "Backup.setProtection() failed");
+        }
+        Backup.cleanup();
 
         if (guessProtected(TEST_KEY) == enabled) {
             Logger.info("writeProtection", "success");
         } else {
-            if (enabled) {
-                Logger.error("writeProtection", "check failed");
-                throw new BackupCheckException("Protection enable failed");
-            } else {
-                Logger.info("writeProtection", "check failed, probably JP1");
-                writeProtectionJP1(enabled);
-            }
+            Logger.info("writeProtection", "check failed, let's try writeProtectionNative");
+            writeProtectionNative(enabled);
         }
     }
 
-    protected void writeProtectionJP1(boolean enabled) throws BackupCheckException, IOException, NativeException {
-        Backup.cleanup();
+    protected void writeProtectionNative(boolean enabled) throws BackupCheckException, NativeException, InterruptedException {
+        Logger.info("writeProtectionNative", "setting protection to " + enabled);
 
-        Logger.info("writeProtectionJP1", "reading backup data to reset region");
-        BackupFile bin = Backup.getData();
-        String region = bin.getRegion();
-        Logger.info("writeProtectionJP1", "region: " + region);
-        bin.setRegion("");
-        Logger.info("writeProtectionJP1", "writing backup data without region");
-        Backup.setData(bin);
-
-        try {
-            Logger.info("writeProtectionJP1", "setting protection to " + enabled);
-            Backup.setProtection(enabled);
-        } finally {
-            Logger.info("writeProtectionJP1", "reading backup data to restore region");
-            bin = Backup.getData();
-            bin.setRegion(region);
-            Logger.info("writeProtectionJP1", "writing backup data with region");
-            Backup.setData(bin);
-
-            Backup.cleanup();
-        }
+        Shell.exec("/android" + getApplicationInfo().nativeLibraryDir + "/libbackupsetid1.so " + (enabled ? "1" : "0"));
+        Thread.sleep(3000);// Give it some time
 
         if (guessProtected(TEST_KEY) == enabled) {
-            Logger.info("writeProtectionJP1", "success");
+            Logger.info("writeProtectionNative", "success");
         } else {
-            Logger.error("writeProtectionJP1", "check failed");
-            throw new BackupCheckException("JP1 protection write failed");
+            Logger.error("writeProtectionNative", "check failed");
+            throw new BackupCheckException("native protection write failed");
         }
     }
 

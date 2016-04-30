@@ -13,7 +13,6 @@ public class Backup {
     private static native byte[] nativeRead(int id) throws NativeException;
     private static native void nativeWrite(int id, byte[] data) throws NativeException;
     private static native void nativeSync() throws NativeException;
-    private static native void nativeProtect(int mode, byte[] data) throws NativeException;
     private static native void nativeSetId1(int value) throws NativeException;
 
     private static File settingDir = new File("/setting");
@@ -21,14 +20,13 @@ public class Backup {
     private static File backupBakFile = new File(settingDir, "Backup.bak");
 
     public static void save() throws IOException, NativeException {
-        cleanup();
         settingDir.mkdir();
-        nativeSync();
-    }
+        if (!settingDir.isDirectory())
+            throw new IOException("Cannot create setting dir");
 
-    private static void ensureSaved() throws IOException, NativeException {
-        if (!backupBinFile.exists())
-            save();
+        nativeSync();
+        if (!backupBinFile.isFile())
+            throw new NativeException("Backup_sync_all failed");
     }
 
     public static void cleanup() throws IOException {
@@ -39,18 +37,7 @@ public class Backup {
             throw new IOException("Cannot delete setting dir");
     }
 
-    public static BackupFile getData() throws IOException, NativeException {
-        ensureSaved();
-        return new BackupFile(backupBinFile);
-    }
-
-    public static void setData(BackupFile file) throws IOException, NativeException {
-        ensureSaved();
-        nativeProtect(0, file.getData());
-    }
-
     public static void setProtection(boolean protect) throws IOException, NativeException {
-        ensureSaved();
         nativeSetId1(protect ? 1 : 0);
     }
 

@@ -20,5 +20,37 @@ model {
             ldFlags.addAll(['-losal_uipc'])
             abiFilters.add('armeabi')
         }
+
+        sources {
+            main {
+                jni {
+                    source {
+                        exclude 'main.c'
+                    }
+                }
+            }
+        }
     }
+}
+
+task compileBackupSetId1(type: Exec) {
+    // This will compile an executable that can be run outside the chrooted android environment.
+    // It's an executable and not a library, but we still name it lib*.so, so android will unpack it
+    // for us during installation and change the access rights to 777.
+    def sourceDir = "$projectDir/src/main/jni"
+    def sources = fileTree(dir: sourceDir, include: "*.c", exclude: "jni.c")
+    def outputDir = "$projectDir/src/main/jniLibs/armeabi"
+    def output = outputDir + "/libbackupsetid1.so"
+
+    // Get the compiler here: https://launchpad.net/linaro-toolchain-binaries/+milestone/2012.04
+    executable = 'arm-linux-gnueabi-gcc'
+    args = ['-march=armv7', '-Wall', '-Werror', '-std=gnu11', '-losal_uipc', '-o', output] + sources
+
+    inputs.files fileTree(dir: sourceDir)
+    outputs.dir outputDir
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.equals("preBuild"))
+        task.dependsOn compileBackupSetId1
 }
