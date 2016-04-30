@@ -14,6 +14,7 @@ public class Backup {
     private static native void nativeWrite(int id, byte[] data) throws NativeException;
     private static native void nativeSync() throws NativeException;
     private static native void nativeSetId1(int value) throws NativeException;
+    private static native byte[] nativeReadPresetData() throws NativeException;
 
     private static File settingDir = new File("/setting");
     private static File backupBinFile = new File(settingDir, "Backup.bin");
@@ -35,6 +36,10 @@ public class Backup {
         settingDir.delete();
         if (settingDir.exists())
             throw new IOException("Cannot delete setting dir");
+    }
+
+    public static BackupFile readData() throws IOException, NativeException {
+        return new BackupFile(nativeReadPresetData());
     }
 
     public static void setProtection(boolean protect) throws IOException, NativeException {

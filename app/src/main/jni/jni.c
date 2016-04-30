@@ -59,6 +59,31 @@ void Java_com_github_ma1co_openmemories_tweak_Backup_nativeSetId1(JNIEnv *env, j
         throw_exception(env, "Backup_senser_cmd_ID1 failed");
 }
 
+jbyteArray Java_com_github_ma1co_openmemories_tweak_Backup_nativeReadPresetData(JNIEnv *env, jclass clazz)
+{
+    void *data = NULL;
+    uint32_t len = 0;
+    int32_t err = Backup_senser_cmd_preset_data_read(&data, &len);
+    if (err)
+        throw_exception(env, "Backup_senser_cmd_preset_data_read (read) failed");
+
+    jbyteArray res = (*env)->NewByteArray(env, len);
+    jbyte *res_ptr = (*env)->GetByteArrayElements(env, res, NULL);
+
+    FILE *f = fopen("/dev/mem", "rb");
+    fseek(f, (long) data, SEEK_SET);
+    fread(res_ptr, 1, len, f);
+    fclose(f);
+
+    (*env)->ReleaseByteArrayElements(env, res, res_ptr, 0);
+
+    err = Backup_senser_cmd_preset_data_read(&data, &len);
+    if (err)
+        throw_exception(env, "Backup_senser_cmd_preset_data_read (free) failed");
+
+    return res;
+}
+
 void Java_com_github_ma1co_openmemories_tweak_Shell_nativeExec(JNIEnv *env, jclass clazz, jstring command)
 {
     const char *command_ptr = (*env)->GetStringUTFChars(env, command, NULL);

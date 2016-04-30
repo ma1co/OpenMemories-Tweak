@@ -18,24 +18,17 @@
         android:id="@+id/langTextView"/>
 
     <Button
-        android:layout_width="250sp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="Activate Japanese only (hide menu)"
-        android:onClick="onActivateJapaneseButtonClicked"/>
-
-    <Button
-        android:layout_width="250sp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="Activate English only (for testing)"
-        android:onClick="onActivateEnglishButtonClicked"/>
-
-    <Button
-        android:layout_width="250sp"
+        android:layout_width="200sp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="Activate all"
         android:onClick="onActivateAllButtonClicked"/>
+
+    <Button
+        android:layout_width="200sp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Reset to default"
+        android:onClick="onResetButtonClicked"/>
 
 </LinearLayout>

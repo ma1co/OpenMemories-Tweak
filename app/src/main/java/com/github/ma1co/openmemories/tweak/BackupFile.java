@@ -1,16 +1,10 @@
 package com.github.ma1co.openmemories.tweak;
 
-import java.io.File;
 import java.io.IOException;
 
 public class BackupFile extends Binary {
     public BackupFile(byte[] data) throws IOException {
         super(data);
-        checkData();
-    }
-
-    public BackupFile(File file) throws IOException {
-        super(file);
         checkData();
     }
 
@@ -24,9 +18,5 @@ public class BackupFile extends Binary {
 
     public String getRegion() {
         return readCString(0xC0);
-    }
-
-    public void setRegion(String region) {
-        writeCString(0xC0, region);
     }
 }

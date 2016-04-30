@@ -8,3 +8,4 @@ int32_t Backup_write(uint32_t id, void *addr);
 void Backup_sync_all();
 int32_t Backup_protect(uint32_t mode, void *overwrite_data, uint32_t size);
 int32_t Backup_senser_cmd_ID1(uint32_t value);
+int32_t Backup_senser_cmd_preset_data_read(void **ptr, uint32_t *len);
