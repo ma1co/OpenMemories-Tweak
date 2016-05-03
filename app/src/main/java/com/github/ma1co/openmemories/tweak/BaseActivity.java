@@ -66,23 +66,23 @@ public class BaseActivity extends Activity {
         }
     }
 
-    protected void checkBackupHalfwordValues(int[] ids, int min, int max) throws BackupCheckException {
+    protected void checkBackupShortValues(int[] ids, int min, int max) throws BackupCheckException {
         for (int id : ids) {
             try {
                 int size = Backup.getSize(id);
                 if (size != 2) {
-                    Logger.error("checkBackupHalfwordValues", String.format("0x%x has wrong size: %d", id, size));
+                    Logger.error("checkBackupShortValues", String.format("0x%x has wrong size: %d", id, size));
                     throw new BackupCheckException("Cannot read settings file: Wrong data size");
                 }
                 byte[] bytes = Backup.getValue(id);
                 ByteBuffer bb = ByteBuffer.wrap(bytes);
                 int value = (int)bb.getShort() & 0x00ffff;
                 if (value < min || value > max) {
-                    Logger.error("checkBackupHalfwordValues", String.format("0x%x out of bounds: %d", id, value));
+                    Logger.error("checkBackupShortValues", String.format("0x%x out of bounds: %d", id, value));
                     throw new BackupCheckException("Cannot read settings file:  Value out of bounds");
                 }
             } catch (NativeException e) {
-                Logger.error("checkBackupHalfwordValues", String.format("error reading 0x%x", id), e);
+                Logger.error("checkBackupShortValues", String.format("error reading 0x%x", id), e);
                 throw new BackupCheckException("Read failed");
             }
         }

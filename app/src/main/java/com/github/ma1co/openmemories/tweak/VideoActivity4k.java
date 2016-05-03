@@ -28,7 +28,7 @@ public class VideoActivity4k extends BaseActivity {
     }
 
     protected void readCheck() throws BackupCheckException {
-        checkBackupHalfwordValues(new int[] { BackupKeys.REC_LIMIT_4K }, 0, 0x00ffff);
+        checkBackupShortValues(new int[] { BackupKeys.REC_LIMIT_4K }, 0, 0x00ffff);
     }
 
     protected void writeCheck() throws BackupCheckException {

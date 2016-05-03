@@ -26,8 +26,11 @@ public class MainActivity extends TabActivity {
         });
 
         addTab("video", "Video", android.R.drawable.ic_menu_camera, VideoActivity.class);
-        //todo: only show video4k tab if camera has the relevant backup key!
-        addTab("video4k", "4k Video", android.R.drawable.ic_menu_camera, VideoActivity4k.class);
+        try {
+            if (Backup.getSize(BackupKeys.REC_LIMIT_4K) == 2) {
+                addTab("video4k", "4k Video", android.R.drawable.ic_menu_camera, VideoActivity4k.class);
+            }
+        } catch(NativeException e) { /* no op */ }
         addTab("lang", "Languages", android.R.drawable.ic_menu_mapmode, LanguageActivity.class);
         addTab("protection", "Protection", android.R.drawable.ic_lock_lock, ProtectionActivity.class);
     }
