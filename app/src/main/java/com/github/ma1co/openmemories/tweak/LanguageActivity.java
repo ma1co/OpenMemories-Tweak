@@ -1,10 +1,8 @@
 package com.github.ma1co.openmemories.tweak;
 
 import android.os.Bundle;
-import android.view.View;
-import android.widget.TextView;
 
-public class LanguageActivity extends BaseActivity {
+public class LanguageActivity extends BaseActivity implements SwitchView.CheckedListener {
     public static final int[] LANG_ALL  = new int[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
     public static final int[] LANG_APAC = new int[] { 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 2, 2, 2, 2, 1, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
     public static final int[] LANG_CN   = new int[] { 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
@@ -32,27 +30,25 @@ public class LanguageActivity extends BaseActivity {
     public static final int LANGUAGE_ENABLED  = 1;
     public static final int LANGUAGE_DISABLED = 2;
 
-    private TextView langTextView;
+    private SwitchView langSwitch;
+    private SwitchView palNtscSwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_language);
-        langTextView = (TextView) findViewById(R.id.langTextView);
+
+        langSwitch = (SwitchView) findViewById(R.id.lang_switch);
+        langSwitch.setListener(this);
+        palNtscSwitch = (SwitchView) findViewById(R.id.pal_ntsc_switch);
+        palNtscSwitch.setListener(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         showActiveLanguages();
-    }
-
-    protected void readCheck() throws BackupCheckException {
-        checkBackupByteValues(BackupKeys.LANGUAGE_ACTIVE_LIST, LANGUAGE_ENABLED, LANGUAGE_DISABLED);
-    }
-
-    protected void writeCheck() throws BackupCheckException {
-        checkBackupWritable(BackupKeys.LANGUAGE_ACTIVE_LIST);
+        showPalNtscEnabled();
     }
 
     protected boolean[] readActiveLanguages() throws NativeException {
@@ -68,17 +64,18 @@ public class LanguageActivity extends BaseActivity {
     }
 
     protected void showActiveLanguages() {
-        langTextView.setText("???");
         try {
             Logger.info("showActiveLanguages", "attempting to read active languages");
-            readCheck();
+            checkBackupByteValues(BackupKeys.LANGUAGE_ACTIVE_LIST, LANGUAGE_ENABLED, LANGUAGE_DISABLED);
             boolean[] langs = readActiveLanguages();
             int count = 0;
             for (boolean active : langs)
                 count += active ? 1 : 0;
-            langTextView.setText(String.format("%d / %d", count, langs.length));
+            langSwitch.setChecked(count == langs.length);
+            langSwitch.setSummary(String.format("%d / %d activated", count, langs.length));
             Logger.info("showActiveLanguages", "done: " + count);
         } catch (Exception e) {
+            langSwitch.setEnabled(false);
             Logger.error("showActiveLanguages", e);
             showError(e);
         }
@@ -87,15 +84,14 @@ public class LanguageActivity extends BaseActivity {
     protected void setActiveLanguages(int[] langs) {
         try {
             Logger.info("setActiveLanguages", "attempting to write active languages");
-            readCheck();
-            writeCheck();
+            checkBackupWritable(BackupKeys.LANGUAGE_ACTIVE_LIST);
             writeActiveLanguages(langs);
-            showActiveLanguages();
             Logger.info("setActiveLanguages", "done");
         } catch (Exception e) {
             Logger.error("setActiveLanguages", e);
             showError(e);
         }
+        showActiveLanguages();
     }
 
     protected void resetActiveLanguages() {
@@ -114,11 +110,51 @@ public class LanguageActivity extends BaseActivity {
         }
     }
 
-    public void onActivateAllButtonClicked(View view) {
-        setActiveLanguages(LANG_ALL);
+    protected boolean readPalNtscEnabled() throws NativeException {
+        return Backup.getValue(BackupKeys.PAL_NTSC_SELECTOR_ENABLED)[0] == 1;
     }
 
-    public void onResetButtonClicked(View view) {
-        resetActiveLanguages();
+    protected void writePalNtscEnabled(boolean enabled) throws NativeException {
+        Backup.setValue(BackupKeys.PAL_NTSC_SELECTOR_ENABLED, new byte[] {(byte) (enabled ? 1 : 0)});
+    }
+
+    protected void showPalNtscEnabled() {
+        try {
+            Logger.info("showPalNtscEnabled", "attempting to read pal / ntsc");
+            checkBackupByteValues(new int[] {BackupKeys.PAL_NTSC_SELECTOR_ENABLED}, 0, 1);
+            boolean enabled = readPalNtscEnabled();
+            palNtscSwitch.setChecked(enabled);
+            palNtscSwitch.setSummary(String.format(enabled ? "Enabled" : "Disabled"));
+            Logger.info("showPalNtscEnabled", "done: " + enabled);
+        } catch (Exception e) {
+            palNtscSwitch.setEnabled(false);
+            Logger.error("showPalNtscEnabled", e);
+            showError(e);
+        }
+    }
+
+    protected void setPalNtscEnabled(boolean enabled) {
+        try {
+            Logger.info("setPalNtscEnabled", "attempting to write pal / ntsc: " + enabled);
+            checkBackupWritable(new int[] {BackupKeys.PAL_NTSC_SELECTOR_ENABLED});
+            writePalNtscEnabled(enabled);
+            Logger.info("setPalNtscEnabled", "done");
+        } catch (Exception e) {
+            Logger.error("setPalNtscEnabled", e);
+            showError(e);
+        }
+        showPalNtscEnabled();
+    }
+
+    @Override
+    public void onCheckedChanged(SwitchView view, boolean checked) {
+        if (langSwitch.equals(view)) {
+            if (checked)
+                setActiveLanguages(LANG_ALL);
+            else
+                resetActiveLanguages();
+        } else if(palNtscSwitch.equals(view)) {
+            setPalNtscEnabled(checked);
+        }
     }
 }

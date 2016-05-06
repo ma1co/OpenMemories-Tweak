@@ -16,4 +16,6 @@ public class BackupKeys {
         for (int i = 0; i < LANGUAGE_ACTIVE_COUNT; i++)
             LANGUAGE_ACTIVE_LIST[i] = LANGUAGE_ACTIVE_FIRST + i;
     }
+
+    public static final int PAL_NTSC_SELECTOR_ENABLED = 0x01070148;
 }

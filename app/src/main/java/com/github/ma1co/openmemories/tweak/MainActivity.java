@@ -31,7 +31,7 @@ public class MainActivity extends TabActivity {
                 addTab("video4k", "4k Video", android.R.drawable.ic_menu_camera, VideoActivity4k.class);
             }
         } catch(NativeException e) { /* no op */ }
-        addTab("lang", "Languages", android.R.drawable.ic_menu_mapmode, LanguageActivity.class);
+        addTab("region", "Region", android.R.drawable.ic_menu_mapmode, LanguageActivity.class);
         addTab("protection", "Protection", android.R.drawable.ic_lock_lock, ProtectionActivity.class);
         addTab("developer", "Developer", android.R.drawable.ic_menu_manage, DeveloperActivity.class);
     }
