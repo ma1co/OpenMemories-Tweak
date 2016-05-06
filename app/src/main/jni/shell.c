@@ -15,5 +15,5 @@ void shell_exec(const char *cmd)
     strcpy(msg + 4, cmd);
 
     osal_snd_msg(type, msg);
-    osal_free_msg(type, msg);
+    // Do not free async messages
 }

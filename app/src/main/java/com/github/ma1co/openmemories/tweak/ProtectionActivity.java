@@ -46,7 +46,7 @@ public class ProtectionActivity extends BaseActivity {
         }
     }
 
-    protected void writeProtection(boolean enabled) throws BackupCheckException, InterruptedException, IOException, NativeException {
+    protected void writeProtection(boolean enabled) throws BackupCheckException, IOException, NativeException {
         Logger.info("writeProtection", "setting protection to " + enabled);
 
         Backup.cleanup();
@@ -84,18 +84,27 @@ public class ProtectionActivity extends BaseActivity {
         }
     }
 
-    protected void writeProtectionNative(boolean enabled) throws BackupCheckException, NativeException, InterruptedException {
+    protected void writeProtectionNative(final boolean enabled) throws BackupCheckException, NativeException {
         Logger.info("writeProtectionNative", "setting protection to " + enabled);
 
         Shell.exec("/android" + getApplicationInfo().nativeLibraryDir + "/libbackupsetid1.so " + (enabled ? "1" : "0"));
-        Thread.sleep(3000);// Give it some time
 
-        if (guessProtected(TEST_KEY) == enabled) {
-            Logger.info("writeProtectionNative", "success");
-        } else {
-            Logger.error("writeProtectionNative", "check failed");
-            throw new BackupCheckException("native protection write failed");
+        try {
+            Condition.waitFor(new Condition.Runnable() {
+                @Override
+                public boolean run() {
+                    try {
+                        return guessProtected(TEST_KEY) == enabled;
+                    } catch (BackupCheckException e) {
+                        return false;
+                    }
+                }
+            }, 500, 5000);
+        } catch (Exception e) {
+            Logger.error("writeProtectionNative", "waitFor failed");
+            throw new BackupCheckException("Native protection write failed");
         }
+        Logger.info("writeProtectionNative", "success");
     }
 
     protected void showCurrentProtection() {
