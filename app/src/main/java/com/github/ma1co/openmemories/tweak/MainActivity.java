@@ -33,6 +33,7 @@ public class MainActivity extends TabActivity {
         } catch(NativeException e) { /* no op */ }
         addTab("lang", "Languages", android.R.drawable.ic_menu_mapmode, LanguageActivity.class);
         addTab("protection", "Protection", android.R.drawable.ic_lock_lock, ProtectionActivity.class);
+        addTab("developer", "Developer", android.R.drawable.ic_menu_manage, DeveloperActivity.class);
     }
 
     protected void addTab(String tag, String label, int iconId, Class activity) {
