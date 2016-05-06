@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.view.KeyEvent;
 
+import java.nio.ByteBuffer;
+
 public class BaseActivity extends Activity {
     public static class BackupCheckException extends Exception {
         public BackupCheckException(String message) {
@@ -59,6 +61,28 @@ public class BaseActivity extends Activity {
                 }
             } catch (NativeException e) {
                 Logger.error("checkBackupByteValues", String.format("error reading 0x%x", id), e);
+                throw new BackupCheckException("Read failed");
+            }
+        }
+    }
+
+    protected void checkBackupShortValues(int[] ids, int min, int max) throws BackupCheckException {
+        for (int id : ids) {
+            try {
+                int size = Backup.getSize(id);
+                if (size != 2) {
+                    Logger.error("checkBackupShortValues", String.format("0x%x has wrong size: %d", id, size));
+                    throw new BackupCheckException("Cannot read settings file: Wrong data size");
+                }
+                byte[] bytes = Backup.getValue(id);
+                ByteBuffer bb = ByteBuffer.wrap(bytes);
+                int value = (int)bb.getShort() & 0x00ffff;
+                if (value < min || value > max) {
+                    Logger.error("checkBackupShortValues", String.format("0x%x out of bounds: %d", id, value));
+                    throw new BackupCheckException("Cannot read settings file:  Value out of bounds");
+                }
+            } catch (NativeException e) {
+                Logger.error("checkBackupShortValues", String.format("error reading 0x%x", id), e);
                 throw new BackupCheckException("Read failed");
             }
         }

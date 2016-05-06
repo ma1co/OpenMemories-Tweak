@@ -5,6 +5,8 @@ public class BackupKeys {
     public static final int REC_LIMIT_M = 0x003c0374;
     public static final int REC_LIMIT_S = 0x003c0375;
 
+    public static final int REC_LIMIT_4K = 0x003c04b6;
+
     private static final int LANGUAGE_ACTIVE_FIRST = 0x010d008f;
     private static final int LANGUAGE_ACTIVE_COUNT = 35;
     public static final int[] LANGUAGE_ACTIVE_LIST;

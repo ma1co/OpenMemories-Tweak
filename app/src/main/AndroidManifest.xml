@@ -12,6 +12,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".VideoActivity" android:theme="@style/BaseTheme" />
+        <activity android:name=".VideoActivity4k" android:theme="@style/BaseTheme" />
         <activity android:name=".LanguageActivity" android:theme="@style/BaseTheme" />
         <activity android:name=".ProtectionActivity" android:theme="@style/BaseTheme" />
     </application>
