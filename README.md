@@ -23,11 +23,17 @@ There are several different tabs:
 ### Video
 Remove the 30 minute recording limit and enjoy (almost) unlimited video recording.
 
-### Languages
+### Region
 Is your camera locked to Japanese? Is it set to the wrong region? Unlock all 30+ languages.
 
 ### Protection
 Use this option only if you're asked to do so. Some of the above settings may fail because your settings file is locked. Disable the protection here. In practice, it should only matter to this app if your settings are protected or not. Otherwise, this won't change anything. We still recommend re-enabling protection after you're done tweaking your settings.
+
+### Developer
+As of version 0.6 it is possible to run a telnet daemon on the device and connect to it over the Wifi interface. The devices have a BusyBox shell through which you can interact.
+
+#### Dumping firmware
+If you need to dump the firmware of the device you can use the telnet interface to run a command such as `dd if=/dev/nflasha of=/android/mnt/sdcard/DUMP.DAT bs=1M` to dump the flash to the sdcard (This will take some time as it copies around 500MB). The resulting file can be unpacked with fwtool.py. If `/android/mnt/sdcard` is not available on your device you can inspect the mounts via `cat /proc/mounts`.
 
 ## FAQ
 ### How does it all work?
