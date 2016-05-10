@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class Procfs {
     public static SparseArray<String> listProcesses() {
-        SparseArray<String> processes = new SparseArray<String>();
+        SparseArray<String> processes = new SparseArray<>();
 
         for (File process : new File("/proc").listFiles()) {
             try {
@@ -18,9 +18,7 @@ public class Procfs {
                 int l = new FileInputStream(new File(process, "cmdline")).read(buf);
                 if (l != -1)
                     processes.put(pid, new String(buf, 0, l));
-            } catch (NumberFormatException e) {
-            } catch (IOException e) {
-            }
+            } catch (NumberFormatException | IOException e) {}
         }
 
         return processes;

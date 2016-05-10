@@ -9,10 +9,12 @@ model {
             applicationId = 'com.github.ma1co.openmemories.tweak'
             minSdkVersion.apiLevel = 10
             targetSdkVersion.apiLevel = 10
-            sourceCompatibility = JavaVersion.VERSION_1_6
-            targetCompatibility = JavaVersion.VERSION_1_6
             versionCode "git -C ${projectDir} rev-list --first-parent --count HEAD".execute().text.trim().toInteger()
             versionName "git -C ${projectDir} describe --always --tags --dirty".execute().text.trim().replaceAll("^v", "")
+        }
+        compileOptions.with {
+            sourceCompatibility = JavaVersion.VERSION_1_7
+            targetCompatibility = JavaVersion.VERSION_1_7
         }
         ndk {
             moduleName = 'tweak'
