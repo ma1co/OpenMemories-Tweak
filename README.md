@@ -23,15 +23,36 @@ There are several different tabs:
 ### Video
 Remove the 30 minute recording limit and enjoy (almost) unlimited video recording.
 
-### Languages
+### Region
 Is your camera locked to Japanese? Is it set to the wrong region? Unlock all 30+ languages.
+
+Is your camera locked to NTSC? Enable the PAL / NTSC selector.
+
+Does your camera show you the NTSC nag screen on every startup? Disable the PAL / NTSC selector to get rid of the nag screen.
 
 ### Protection
 Use this option only if you're asked to do so. Some of the above settings may fail because your settings file is locked. Disable the protection here. In practice, it should only matter to this app if your settings are protected or not. Otherwise, this won't change anything. We still recommend re-enabling protection after you're done tweaking your settings.
 
+### Developer
+Run a telnet daemon and connect to it via wifi.
+
+#### Run an Android shell
+    android_console.sh
+
+#### Dump firmware to sdcard
+On Android 2:
+
+    dd if=/dev/nflasha of=/android/mnt/sdcard/DUMP.DAT bs=1M
+
+On Android 4:
+
+    dd if=/dev/nflasha of=/android/storage/sdcard0/DUMP.DAT bs=1M
+
+This operation will take some time (it copies about 500MB). Use [fwtool.py](https://github.com/ma1co/fwtool.py) to unpack the dump file.
+
 ## FAQ
 ### How does it all work?
-[nex-hack](http://www.nex-hack.info/) managed to decrypt firmware updates (see [fwtool.py](https://github.com/ma1co/fwtool.py) for a more recent unpacker). The [PMCA-RE](https://github.com/ma1co/Sony-PMCA-RE) project reverse engineered how apps are installed. This allows us to run custom code. With the knowledge from the firmware, we found out how settings are stored on the camera (hint: in a file called *Backup.bin*). We can now change these settings directly, also the ones locked by Sony.
+[nex-hack](http://www.personal-view.com/faqs/sony-hack/hack-development) managed to decrypt firmware updates (see [fwtool.py](https://github.com/ma1co/fwtool.py) for a more recent unpacker). The [PMCA-RE](https://github.com/ma1co/Sony-PMCA-RE) project reverse engineered how apps are installed. This allows us to run custom code. With the knowledge from the firmware, we found out how settings are stored on the camera (hint: in a file called *Backup.bin*). We can now change these settings directly, also the ones locked by Sony.
 
 ### It doesn't work for me!
 First, thanks for testing. If you encounter a bug, please open an issue!
