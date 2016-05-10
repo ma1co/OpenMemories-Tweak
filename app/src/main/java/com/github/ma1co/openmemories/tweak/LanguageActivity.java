@@ -3,28 +3,49 @@ package com.github.ma1co.openmemories.tweak;
 import android.os.Bundle;
 
 public class LanguageActivity extends BaseActivity implements SwitchView.CheckedListener {
-    public static final int[] LANG_ALL  = new int[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-    public static final int[] LANG_APAC = new int[] { 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 2, 2, 2, 2, 1, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
-    public static final int[] LANG_CN   = new int[] { 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
-    public static final int[] LANG_EU   = new int[] { 1, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 2, 1, 2, 2, 1, 2, 2, 2, 2 };
-    public static final int[] LANG_JP   = new int[] { 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
-    public static final int[] LANG_US   = new int[] { 1, 2, 1, 2, 1, 1, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
-
-    public static int[] getLangsForRegion(String r) {
-        if ("ALLLANG".equals(r))
-            return LANG_ALL;
-        else if ("AP2".equals(r) || "IN5".equals(r))
-            return LANG_APAC;
-        else if ("CEC".equals(r) || "CE".equals(r) || "RU2".equals(r))
-            return LANG_EU;
-        else if ("CN2".equals(r) || "E38".equals(r) || "JE3".equals(r) || "KR2".equals(r) || "TW6".equals(r))
-            return LANG_CN;
-        else if ("J1".equals(r))
-            return LANG_JP;
-        else if ("UC2".equals(r))
-            return LANG_US;
-        else
-            return null;
+    public static int[] getLangsForRegion(String region) {
+        switch (region) {
+            case "ALLLANG":
+                return new int[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+            case "AP2":
+            case "IN5":
+            case "JE3":
+                return new int[] { 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 2, 2, 2, 2, 1, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+            case "AU2":
+            case "CE7":
+            case "CN1":
+            case "E32":
+            case "E33":
+            case "E37":
+            case "EA8":
+            case "HK1":
+            case "KR2":
+            case "TW6":
+                return new int[] { 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 2, 2, 2, 2, 1, 2, 2, 1, 1, 2, 2, 2, 2, 1, 2, 1, 2, 2, 2 };
+            case "CA2":
+                return new int[] { 1, 2, 1, 2, 1, 1, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+            case "CE":
+            case "RU2":
+                return new int[] { 1, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2 };
+            case "CE3":
+            case "CEH":
+                return new int[] { 1, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2 };
+            case "CEC":
+                return new int[] { 1, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 2, 1, 2, 2, 1, 2, 2, 2, 2 };
+            case "CN2":
+            case "E38":
+                return new int[] { 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2 };
+            case "J1":
+                return new int[] { 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+            case "RU3":
+                return new int[] { 1, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 2, 2, 1, 2, 2, 2, 2 };
+            case "U2":
+                return new int[] { 1, 2, 1, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+            case "UC2":
+                return new int[] { 1, 2, 1, 2, 1, 1, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+            default:
+                return null;
+        }
     }
 
     public static final int LANGUAGE_ENABLED  = 1;
@@ -91,7 +112,6 @@ public class LanguageActivity extends BaseActivity implements SwitchView.Checked
             Logger.error("setActiveLanguages", e);
             showError(e);
         }
-        showActiveLanguages();
     }
 
     protected void resetActiveLanguages() {
@@ -124,7 +144,7 @@ public class LanguageActivity extends BaseActivity implements SwitchView.Checked
             checkBackupByteValues(new int[] {BackupKeys.PAL_NTSC_SELECTOR_ENABLED}, 0, 1);
             boolean enabled = readPalNtscEnabled();
             palNtscSwitch.setChecked(enabled);
-            palNtscSwitch.setSummary(String.format(enabled ? "Enabled" : "Disabled"));
+            palNtscSwitch.setSummary(enabled ? "Enabled" : "Disabled");
             Logger.info("showPalNtscEnabled", "done: " + enabled);
         } catch (Exception e) {
             palNtscSwitch.setEnabled(false);
@@ -150,9 +170,10 @@ public class LanguageActivity extends BaseActivity implements SwitchView.Checked
     public void onCheckedChanged(SwitchView view, boolean checked) {
         if (langSwitch.equals(view)) {
             if (checked)
-                setActiveLanguages(LANG_ALL);
+                setActiveLanguages(getLangsForRegion("ALLLANG"));
             else
                 resetActiveLanguages();
+            showActiveLanguages();
         } else if(palNtscSwitch.equals(view)) {
             setPalNtscEnabled(checked);
         }
