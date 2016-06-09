@@ -116,7 +116,7 @@ public class DeveloperActivity extends BaseActivity implements SwitchView.Checke
             } else {
                 int pid = getTelnetPid();
                 if (pid != -1)
-                    Shell.exec("kill " + pid);
+                    Shell.exec("kill -HUP " + pid + " $(ps -o pid= --ppid " + pid + ")");
             }
 
             Condition.waitFor(new Condition.Runnable() {
