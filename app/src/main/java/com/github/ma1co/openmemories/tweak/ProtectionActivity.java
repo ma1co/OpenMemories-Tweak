@@ -1,52 +1,72 @@
 package com.github.ma1co.openmemories.tweak;
 
 import android.os.Bundle;
-import android.view.View;
-import android.widget.TextView;
 
 import java.io.IOException;
 
-public class ProtectionActivity extends BaseActivity {
-    public static final int TEST_KEY = BackupKeys.LANGUAGE_ACTIVE_LIST[0];
-
-    private TextView protectionTextView;
+public class ProtectionActivity extends ItemActivity {
+    public static final BackupProperty.Byte TEST_KEY = BackupKeys.LANGUAGE_ACTIVE_LIST[0];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_protection);
-        protectionTextView = (TextView) findViewById(R.id.protectionTextView);
+
+        addSwitch("Unlock protected settings", new SwitchItem.Adapter() {
+            @Override
+            public boolean isAvailable() {
+                try {
+                    guessProtected(TEST_KEY);
+                    return true;
+                } catch (BackupProperty.BackupException e) {
+                    return false;
+                }
+            }
+
+            @Override
+            public boolean isEnabled() {
+                try {
+                    return !guessProtected(TEST_KEY);
+                } catch (BackupProperty.BackupException e) {
+                    return false;
+                }
+            }
+
+            @Override
+            public void setEnabled(boolean enabled) throws BackupProperty.BackupException, IOException {
+                writeProtection(!enabled);
+            }
+
+            @Override
+            public String getSummary() {
+                return isEnabled() ? "Protection disabled" : "Protection enabled";
+            }
+        });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        showCurrentProtection();
-    }
-
-    protected boolean guessProtected(int id) throws BackupCheckException {
+    protected <T> boolean guessProtected(BackupProperty.BaseProperty<T> property) throws BackupProperty.BackupException {
+        T value;
         try {
-            byte[] value = Backup.getValue(id);
-            boolean isReadOnly = Backup.isReadOnly(id);
-            if (!isReadOnly) {
-                Logger.error("guessProtected", String.format("0x%x not read only", id));
-                throw new BackupCheckException("Test key is writable");
-            }
-            try {
-                Backup.setValue(id, value);
-                Logger.info("guessProtected", String.format("0x%x written successfully (no protection)", id));
-                return false;
-            } catch (NativeException e) {
-                Logger.info("guessProtected", String.format("cannot write 0x%x (probably protection)", id));
-                return true;
-            }
-        } catch (NativeException e) {
-            Logger.error("guessProtected", String.format("error reading 0x%x", id), e);
-            throw new BackupCheckException("Read failed");
+            value = property.getValue();
+        } catch (BackupProperty.BackupException e) {
+            Logger.error("guessProtected", String.format("error reading %s", property), e);
+            throw new BackupProperty.BackupException("Read failed");
+        }
+
+        if (!property.isReadOnly()) {
+            Logger.error("guessProtected", String.format("%s is not read only", property));
+            throw new BackupProperty.BackupException("Test key is writable");
+        }
+        try {
+            property.setValue(value);
+            Logger.info("guessProtected", String.format("%s written successfully (no protection)", property));
+            return false;
+        } catch (BackupProperty.BackupException e) {
+            Logger.info("guessProtected", String.format("cannot write %s (probably protection)", property));
+            return true;
         }
     }
 
-    protected void writeProtection(boolean enabled) throws BackupCheckException, IOException, NativeException {
+    protected void writeProtection(boolean enabled) throws BackupProperty.BackupException, IOException {
         Logger.info("writeProtection", "setting protection to " + enabled);
 
         Backup.cleanup();
@@ -84,7 +104,7 @@ public class ProtectionActivity extends BaseActivity {
         }
     }
 
-    protected void writeProtectionNative(final boolean enabled) throws BackupCheckException, NativeException {
+    protected void writeProtectionNative(final boolean enabled) throws BackupProperty.BackupException {
         Logger.info("writeProtectionNative", "setting protection to " + enabled);
 
         Shell.exec("/android" + getApplicationInfo().nativeLibraryDir + "/libbackupsetid1.so " + (enabled ? "1" : "0"));
@@ -95,49 +115,15 @@ public class ProtectionActivity extends BaseActivity {
                 public boolean run() {
                     try {
                         return guessProtected(TEST_KEY) == enabled;
-                    } catch (BackupCheckException e) {
+                    } catch (BackupProperty.BackupException e) {
                         return false;
                     }
                 }
             }, 500, 5000);
         } catch (Exception e) {
             Logger.error("writeProtectionNative", "waitFor failed");
-            throw new BackupCheckException("Native protection write failed");
+            throw new BackupProperty.BackupException("Native protection write failed");
         }
         Logger.info("writeProtectionNative", "success");
-    }
-
-    protected void showCurrentProtection() {
-        protectionTextView.setText("???");
-        try {
-            Logger.info("showCurrentProtection", "attempting to guess protection");
-            boolean enabled = guessProtected(TEST_KEY);
-            protectionTextView.setText(enabled ? "Protection enabled" : "Protection disabled");
-            Logger.info("showCurrentProtection", "done: " + enabled);
-        } catch (Exception e) {
-            Logger.error("showCurrentProtection", e);
-            showError(e);
-        }
-    }
-
-    protected void setProtection(boolean enabled) {
-        try {
-            Logger.info("setProtection", "attempting to set protection to " + enabled);
-            guessProtected(TEST_KEY);
-            writeProtection(enabled);
-            showCurrentProtection();
-            Logger.info("setProtection", "done");
-        } catch (Exception e) {
-            Logger.error("setProtection", e);
-            showError(e);
-        }
-    }
-
-    public void onEnableProtectionButtonClicked(View view) {
-        setProtection(true);
-    }
-
-    public void onDisableProtectionButtonClicked(View view) {
-        setProtection(false);
     }
 }

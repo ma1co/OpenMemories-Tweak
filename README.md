@@ -23,6 +23,8 @@ There are several different tabs:
 ### Video
 Remove the 30 minute recording limit and enjoy (almost) unlimited video recording.
 
+Additionally, remove the 5 minute 4K recording limit on the RX100M4.
+
 ### Region
 Is your camera locked to Japanese? Is it set to the wrong region? Unlock all 30+ languages.
 

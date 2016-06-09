@@ -11,34 +11,130 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.format.Formatter;
-import android.view.View;
 
-public class DeveloperActivity extends BaseActivity implements SwitchView.CheckedListener {
-    public static final String[] telnetStartCommand = new String[] { "busybox", "telnetd", "-l", "sh" };
+import java.util.concurrent.TimeoutException;
 
+public class DeveloperActivity extends ItemActivity {
     private ConnectivityManager connectivityManager;
     private WifiManager wifiManager;
     private BroadcastReceiver receiver;
-    private SwitchView telnetSwitch;
-    private SwitchView wifiSwitch;
+    private BaseItem wifiSwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_developer);
-
-        telnetSwitch = (SwitchView) findViewById(R.id.telnet_switch);
-        telnetSwitch.setListener(this);
-        wifiSwitch = (SwitchView) findViewById(R.id.wifi_switch);
-        wifiSwitch.setListener(this);
 
         connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 
+        wifiSwitch = addSwitch("Enable Wifi", new SwitchItem.Adapter() {
+            @Override
+            public boolean isAvailable() {
+                return true;
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return isWifiEnabled();
+            }
+
+            @Override
+            public void setEnabled(boolean enabled) {
+                setWifiEnabled(enabled);
+            }
+
+            @Override
+            public String getSummary() {
+                if (isEnabled()) {
+                    NetworkInfo networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                    WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                    if (networkInfo.isConnected()) {
+                        return String.format("Connected to %s (IP: %s)", wifiInfo.getSSID(), Formatter.formatIpAddress(wifiInfo.getIpAddress()));
+                    } else {
+                        NetworkInfo.DetailedState state = WifiInfo.getDetailedStateOf(wifiInfo.getSupplicantState());
+                        switch (state) {
+                            case SCANNING:
+                                return "Scanning...";
+                            case AUTHENTICATING:
+                            case CONNECTING:
+                            case OBTAINING_IPADDR:
+                                return "Connecting...";
+                            default:
+                                return "Wifi enabled";
+                        }
+                    }
+                } else {
+                    return "Wifi disabled";
+                }
+            }
+        });
+
+        addSwitch("Enable Telnet", new SwitchItem.Adapter() {
+            private final String[] telnetStartCommand = new String[] { "busybox", "telnetd", "-l", "sh" };
+
+            private int getTelnetPid() {
+                return Procfs.findProcess(telnetStartCommand);
+            }
+
+            private void enableTelnet() {
+                Shell.exec(TextUtils.join(" ", telnetStartCommand));
+            }
+
+            private void disableTelnet() {
+                int pid = getTelnetPid();
+                if (pid != -1)
+                    Shell.exec("kill -HUP " + pid + " $(ps -o pid= --ppid " + pid + ")");
+            }
+
+            @Override
+            public boolean isAvailable() {
+                return true;
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return getTelnetPid() != -1;
+            }
+
+            @Override
+            public void setEnabled(final boolean enabled) throws InterruptedException, TimeoutException {
+                try {
+                    Logger.info("TelnetAdapter.setEnabled", "setting telnetd to " + enabled);
+                    if (enabled)
+                        enableTelnet();
+                    else
+                        disableTelnet();
+
+                    Condition.waitFor(new Condition.Runnable() {
+                        @Override
+                        public boolean run() {
+                            return isEnabled() == enabled;
+                        }
+                    }, 500, 2000);
+                    Logger.info("TelnetAdapter.setEnabled", "done");
+                } catch (InterruptedException | TimeoutException e) {
+                    Logger.error("TelnetAdapter.setEnabled", e);
+                    throw e;
+                }
+            }
+
+            @Override
+            public String getSummary() {
+                return isEnabled() ? "telnetd running on port 23" : "telnetd stopped";
+            }
+        });
+
+        addButton("Wifi settings", new ButtonItem.Adapter() {
+            @Override
+            public void click() {
+                onSettingsButtonClicked();
+            }
+        });
+
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                updateWifiSwitch();
+                wifiSwitch.update();
             }
         };
     }
@@ -52,86 +148,12 @@ public class DeveloperActivity extends BaseActivity implements SwitchView.Checke
         f.addAction(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION);
         f.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
         registerReceiver(receiver, f);
-
-        updateTelnetSwitch();
-        updateWifiSwitch();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(receiver);
-    }
-
-    protected void updateTelnetSwitch() {
-        boolean telnetEnabled = isTelnetEnabled();
-        telnetSwitch.setChecked(telnetEnabled);
-        telnetSwitch.setSummary(telnetEnabled ? "telnetd running on port 23" : "telnetd disabled");
-    }
-
-    protected void updateWifiSwitch() {
-        boolean wifiEnabled = isWifiEnabled();
-        String summary;
-        if (wifiEnabled) {
-            NetworkInfo networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-            if (networkInfo.isConnected()) {
-                summary = "Connected to " + wifiInfo.getSSID() + " (IP: " + Formatter.formatIpAddress(wifiInfo.getIpAddress()) + ")";
-            } else {
-                NetworkInfo.DetailedState state = WifiInfo.getDetailedStateOf(wifiInfo.getSupplicantState());
-                switch (state) {
-                    case SCANNING:
-                        summary = "Scanning...";
-                        break;
-                    case AUTHENTICATING:
-                    case CONNECTING:
-                    case OBTAINING_IPADDR:
-                        summary = "Connecting...";
-                        break;
-                    default:
-                        summary = "Wifi enabled";
-                }
-            }
-        } else {
-            summary = "Wifi disabled";
-        }
-        wifiSwitch.setChecked(wifiEnabled);
-        wifiSwitch.setSummary(summary);
-    }
-
-    public int getTelnetPid() {
-        Logger.info("getTelnetPid", "listing running processes");
-        return Procfs.findProcess(telnetStartCommand);
-    }
-
-    public boolean isTelnetEnabled() {
-        return getTelnetPid() != -1;
-    }
-
-    public void setTelnetEnabled(final boolean enabled) {
-        try {
-            Logger.info("setTelnetEnabled", "setting telnetd to " + enabled);
-            if (enabled) {
-                Shell.exec(TextUtils.join(" ", telnetStartCommand));
-            } else {
-                int pid = getTelnetPid();
-                if (pid != -1)
-                    Shell.exec("kill -HUP " + pid + " $(ps -o pid= --ppid " + pid + ")");
-            }
-
-            Condition.waitFor(new Condition.Runnable() {
-                @Override
-                public boolean run() {
-                    return isTelnetEnabled() == enabled;
-                }
-            }, 500, 2000);
-            Logger.info("setTelnetEnabled", "done");
-        } catch (Exception e) {
-            Logger.error("setTelnetEnabled", e);
-            showError(e);
-        }
-
-        updateTelnetSwitch();
     }
 
     public boolean isWifiEnabled() {
@@ -144,15 +166,7 @@ public class DeveloperActivity extends BaseActivity implements SwitchView.Checke
         wifiManager.setWifiEnabled(enabled);
     }
 
-    @Override
-    public void onCheckedChanged(SwitchView view, boolean checked) {
-        if (telnetSwitch.equals(view))
-            setTelnetEnabled(checked);
-        else if (wifiSwitch.equals(view))
-            setWifiEnabled(checked);
-    }
-
-    public void onSettingsButtonClicked(View view) {
+    public void onSettingsButtonClicked() {
         Logger.info("onSettingsButtonClicked", "starting wifi settings activity");
         boolean wifiEnabled = isWifiEnabled();
         setWifiEnabled(true);
