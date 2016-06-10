@@ -106,6 +106,36 @@ public class ItemActivity extends BaseActivity {
         }
     }
 
+    public static class InfoItem extends BaseItem {
+        public interface Adapter {
+            boolean isAvailable();
+            String getValue();
+        }
+
+        private final Adapter adapter;
+        private final TextView titleView;
+        private final TextView valueView;
+
+        public InfoItem(Context context, String title, Adapter adapter) {
+            super(context);
+            inflate(context, R.layout.view_info, this);
+            titleView = (TextView) findViewById(R.id.title);
+            valueView = (TextView) findViewById(R.id.value);
+
+            this.adapter = adapter;
+            titleView.setText(title);
+        }
+
+        public Adapter getAdapter() {
+            return adapter;
+        }
+
+        @Override
+        public void update() {
+            valueView.setText(adapter.isAvailable() ? adapter.getValue() : "(not available)");
+        }
+    }
+
     private ViewGroup containerView;
 
     @Override
@@ -142,5 +172,9 @@ public class ItemActivity extends BaseActivity {
 
     protected BaseItem addButton(String text, ButtonItem.Adapter adapter) {
         return addItem(new ButtonItem(this, text, adapter));
+    }
+
+    protected BaseItem addInfo(String title, InfoItem.Adapter adapter) {
+        return addItem(new InfoItem(this, title, adapter));
     }
 }

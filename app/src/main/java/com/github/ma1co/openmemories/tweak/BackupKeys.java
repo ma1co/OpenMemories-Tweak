@@ -24,4 +24,10 @@ public class BackupKeys {
     }
 
     public static final BackupProperty.Byte PAL_NTSC_SELECTOR_ENABLED = new BackupProperty.Byte(0x01070148);
+
+    public static final BackupProperty.CString MODEL_NAME = new BackupProperty.CString(0x003e0005, 16);
+
+    public static final BackupProperty.ByteArray SERIAL_NUMBER = new BackupProperty.ByteArray(0x00e70003, 4);
+
+    public static final BackupProperty.CString PLATFORM_VERSION = new BackupProperty.CString(0x01660024, 8);
 }

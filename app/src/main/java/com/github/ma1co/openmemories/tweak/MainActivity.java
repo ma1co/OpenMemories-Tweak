@@ -25,6 +25,7 @@ public class MainActivity extends TabActivity {
             }
         });
 
+        addTab("info", "Info", android.R.drawable. ic_menu_info_details, InfoActivity.class);
         addTab("video", "Video", android.R.drawable.ic_menu_camera, VideoActivity.class);
         addTab("region", "Region", android.R.drawable.ic_menu_mapmode, RegionActivity.class);
         addTab("protection", "Protection", android.R.drawable.ic_lock_lock, ProtectionActivity.class);

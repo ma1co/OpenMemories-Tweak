@@ -16,6 +16,24 @@ public abstract class BackupProperty<T> {
         }
     }
 
+    public static class ByteArray extends BaseProperty<byte[]> {
+        public ByteArray(int id, int size) {
+            super(id, byte[].class, size);
+        }
+
+        @Override
+        protected byte[] toBytes(byte[] value) {
+            if (value.length != getSize())
+                throw new IllegalArgumentException("Wrong array length");
+            return value;
+        }
+
+        @Override
+        protected byte[] fromBytes(byte[] value) {
+            return value;
+        }
+    }
+
     public static class Byte extends BaseProperty<Integer> {
         public Byte(int id) {
             super(id, Integer.class, 1);
@@ -45,6 +63,29 @@ public abstract class BackupProperty<T> {
         @Override
         protected Integer fromBytes(byte[] value) {
             return (value[0] & 0xff) | value[1] << 8;
+        }
+    }
+
+    public static class CString extends BaseProperty<String> {
+        public CString(int id, int size) {
+            super(id, String.class, size);
+        }
+
+        @Override
+        protected byte[] toBytes(String value) {
+            byte[] bytes = value.getBytes();
+            if (bytes.length > getSize())
+                throw new IllegalArgumentException("String too long");
+            return Arrays.copyOf(bytes, getSize());
+        }
+
+        @Override
+        protected String fromBytes(byte[] value) {
+            String str = new String(value);
+            int length = str.indexOf('\u0000');
+            if (length == -1)
+                length = value.length;
+            return str.substring(0, length);
         }
     }
 

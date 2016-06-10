@@ -14,6 +14,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".InfoActivity" android:theme="@style/BaseTheme" />
         <activity android:name=".VideoActivity" android:theme="@style/BaseTheme" />
         <activity android:name=".RegionActivity" android:theme="@style/BaseTheme" />
         <activity android:name=".ProtectionActivity" android:theme="@style/BaseTheme" />
