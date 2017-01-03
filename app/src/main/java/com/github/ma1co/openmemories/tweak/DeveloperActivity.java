@@ -45,26 +45,29 @@ public class DeveloperActivity extends ItemActivity {
 
             @Override
             public String getSummary() {
-                if (isEnabled()) {
-                    NetworkInfo networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-                    WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-                    if (networkInfo.isConnected()) {
-                        return String.format("Connected to %s (IP: %s)", wifiInfo.getSSID(), Formatter.formatIpAddress(wifiInfo.getIpAddress()));
-                    } else {
-                        NetworkInfo.DetailedState state = WifiInfo.getDetailedStateOf(wifiInfo.getSupplicantState());
-                        switch (state) {
-                            case SCANNING:
-                                return "Scanning...";
-                            case AUTHENTICATING:
-                            case CONNECTING:
-                            case OBTAINING_IPADDR:
-                                return "Connecting...";
-                            default:
-                                return "Wifi enabled";
+                switch (wifiManager.getWifiState()) {
+                    case WifiManager.WIFI_STATE_ENABLED:
+                        NetworkInfo networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                        if (networkInfo.isConnected()) {
+                            return String.format("Connected to %s (IP: %s)", wifiInfo.getSSID(), Formatter.formatIpAddress(wifiInfo.getIpAddress()));
+                        } else {
+                            NetworkInfo.DetailedState state = WifiInfo.getDetailedStateOf(wifiInfo.getSupplicantState());
+                            switch (state) {
+                                case SCANNING:
+                                    return "Scanning...";
+                                case AUTHENTICATING:
+                                case CONNECTING:
+                                case OBTAINING_IPADDR:
+                                    return "Connecting...";
+                                default:
+                                    return "Wifi enabled";
+                            }
                         }
-                    }
-                } else {
-                    return "Wifi disabled";
+                    case WifiManager.WIFI_STATE_ENABLING:
+                        return "Enabling...";
+                    default:
+                        return "Wifi disabled";
                 }
             }
         });
