@@ -54,8 +54,8 @@ public class InfoActivity extends ItemActivity {
             @Override
             public String getValue() {
                 try {
-                    return Backup.readData().getRegion();
-                } catch (IOException | NativeException e) {
+                    return Backup.getRegion();
+                } catch (NativeException e) {
                     return "";
                 }
             }
