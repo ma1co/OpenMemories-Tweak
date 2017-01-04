@@ -1,89 +1,47 @@
-apply plugin: 'com.android.model.application'
+apply plugin: 'com.android.application'
 
-model {
-    repositories {
-        libs(PrebuiltLibraries) {
-            backupsetid1 {
-                binaries.withType(SharedLibraryBinary) {
-                    sharedLibraryFile = file("$buildDir/binaries/libbackupsetid1.so")
-                }
-            }
-        }
-    }
-    android {
-        compileSdkVersion = 10
-        buildToolsVersion = '23.0.3'
+android {
+    compileSdkVersion 10
+    buildToolsVersion '25.0.2'
 
-        defaultConfig {
-            applicationId = 'com.github.ma1co.openmemories.tweak'
-            minSdkVersion.apiLevel = 10
-            targetSdkVersion.apiLevel = 10
-            versionCode "git -C ${projectDir} rev-list --first-parent --count HEAD".execute().text.trim().toInteger()
-            versionName "git -C ${projectDir} describe --always --tags --dirty".execute().text.trim().replaceAll("^v", "")
-        }
-        compileOptions.with {
-            sourceCompatibility = JavaVersion.VERSION_1_7
-            targetCompatibility = JavaVersion.VERSION_1_7
-        }
+    defaultConfig {
+        applicationId 'com.github.ma1co.openmemories.tweak'
+        minSdkVersion 10
+        targetSdkVersion 10
+        versionCode "git -C ${projectDir} rev-list --first-parent --count HEAD".execute().text.trim().toInteger()
+        versionName "git -C ${projectDir} describe --always --tags --dirty".execute().text.trim().replaceAll("^v", "")
         ndk {
-            moduleName = 'tweak'
-            CFlags.addAll(['-Wall', '-Werror', '-std=gnu11'])
-            ldFlags.addAll(['-L', "$buildDir/binaries".toString(), '-losal_uipc'])
-            abiFilters.add('armeabi')
+            abiFilters 'armeabi'
         }
+    }
 
-        sources {
-            main {
-                jni {
-                    source {
-                        exclude 'osal.c'
-                        exclude 'main.c'
-                    }
-                }
-                jniLibs {
-                    dependencies {
-                        library "backupsetid1"
-                    }
-                }
-            }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path 'src/main/jni/Android.mk'
         }
+    }
+
+    packagingOptions {
+        pickFirst 'lib/armeabi/libtweak.so'
+        pickFirst 'lib/armeabi/libbackupsetid1.so'
+        exclude 'lib/armeabi/*.so'
+    }
+
+    sourceSets.main {
+        jniLibs.srcDir "$buildDir/binaries"
     }
 }
 
-task createBinDir << {
-    mkdir("$buildDir/binaries")
-}
-
-task compileOsalStubs(type: Exec, dependsOn: createBinDir) {
-    // This will compile a stub shared library which is needed to link the other executables. This
-    // file is not needed on the camera.
-    def source = "$projectDir/src/main/jni/osal.c"
-    def output = "$buildDir/binaries/libosal_uipc.so"
-
-    executable = 'arm-linux-gnueabi-gcc'
-    args = ['-march=armv7', '-fPIC', '-shared', '-o', output, source]
-    inputs.files files(source)
-    outputs.files files(output)
-}
-
-task compileBackupSetId1(type: Exec, dependsOn: [createBinDir, compileOsalStubs]) {
+task runMake(type: Exec) {
     // This will compile an executable that can be run outside the chrooted android environment.
     // It's an executable and not a library, but we still name it lib*.so, so android will unpack it
     // for us during installation and change the access rights to 777.
-    def sourceDir = "$projectDir/src/main/jni"
-    def sources = fileTree(dir: sourceDir, include: "*.c", excludes: ["jni.c", "osal.c"])
-    def output = "$buildDir/binaries/libbackupsetid1.so"
-
-    // Get the compiler here: https://launchpad.net/linaro-toolchain-binaries/+milestone/2012.04
-    executable = 'arm-linux-gnueabi-gcc'
-    args = ['-march=armv7', '-Wall', '-Werror', '-std=gnu11', '-s', '-L', "$buildDir/binaries", '-losal_uipc', '-o', output] + sources
-    inputs.files fileTree(dir: sourceDir)
-    outputs.files files(output)
+    executable = 'make'
+    args = ["-C", "$projectDir/src/main/jni", "BUILDDIR=$buildDir/binaries/armeabi", "MAIN=libbackupsetid1.so"]
 }
-
-tasks.whenTaskAdded { task ->
-    if (task.name.equals("processAndroidDebugMainJniLibs") || task.name.equals("processAndroidReleaseMainJniLibs"))
-        task.dependsOn compileBackupSetId1
-    if (task.name.equals("tweakArmeabiDebugSharedLibrary") || task.name.equals("tweakArmeabiReleaseSharedLibrary"))
-        task.dependsOn compileOsalStubs
-}
+tasks.withType(com.android.build.gradle.tasks.ExternalNativeBuildTask) { it.dependsOn runMake }

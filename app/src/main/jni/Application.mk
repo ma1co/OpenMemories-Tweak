@@ -1,0 +1,2 @@
+APP_ABI := armeabi
+NDK_TOOLCHAIN_VERSION := 4.9

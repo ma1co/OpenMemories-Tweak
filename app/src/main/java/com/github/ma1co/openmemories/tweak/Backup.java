@@ -13,7 +13,7 @@ public class Backup {
     private static native byte[] nativeRead(int id) throws NativeException;
     private static native void nativeWrite(int id, byte[] data) throws NativeException;
     private static native void nativeSync() throws NativeException;
-    private static native void nativeSetId1(int value) throws NativeException;
+    private static native void nativeSetId1(byte value) throws NativeException;
     private static native byte[] nativeReadPresetData() throws NativeException;
 
     private static File settingDir = new File("/setting");
@@ -43,7 +43,7 @@ public class Backup {
     }
 
     public static void setProtection(boolean protect) throws IOException, NativeException {
-        nativeSetId1(protect ? 1 : 0);
+        nativeSetId1((byte) (protect ? 1 : 0));
     }
 
     public static int getSize(int id) throws NativeException {

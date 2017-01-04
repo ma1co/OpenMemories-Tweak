@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "backup.h"
+#include "drivers/backup.h"
+#include "drivers/backup_senser.h"
 
 int patch_region(const char *newRegion, char **oldRegion)
 {
@@ -17,7 +18,7 @@ int patch_region(const char *newRegion, char **oldRegion)
     size_t len = ftell(f);
     fseek(f, 0, SEEK_SET);
 
-    void *data = malloc(len);
+    char *data = malloc(len);
     if (!data) {
         printf("malloc failed\n");
         return -1;
@@ -26,7 +27,7 @@ int patch_region(const char *newRegion, char **oldRegion)
     fread(data, 1, len, f);
     fclose(f);
 
-    void *region = data + 0xC0;
+    char *region = data + 0xC0;
     if (oldRegion) {
         *oldRegion = malloc(strlen(region) + 1);
         strcpy(*oldRegion, region);
@@ -52,7 +53,7 @@ int main(int argc, char *argv[])
         printf("Usage: %s 1|0\n", argv[0]);
         return -1;
     }
-    uint32_t flag = atoi(argv[1]) ? 1 : 0;
+    char flag = atoi(argv[1]) ? (char) 1 : (char) 0;
 
     printf("Saving backup\n");
     Backup_sync_all();
@@ -67,8 +68,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    printf("Calling Backup_senser_cmd_ID1(%d)\n", flag);
-    int err = Backup_senser_cmd_ID1(flag);
+    printf("Calling backup_senser_cmd_ID1(%d)\n", flag);
+    int err = backup_senser_cmd_ID1(flag, NULL);
 
     if (region) {
         printf("Resetting region\n");
@@ -81,7 +82,7 @@ int main(int argc, char *argv[])
     }
 
     if (err) {
-        printf("Backup_senser_cmd_ID1 failed\n");
+        printf("backup_senser_cmd_ID1 failed\n");
         return -1;
     }
 
