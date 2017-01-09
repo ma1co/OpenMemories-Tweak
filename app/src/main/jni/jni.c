@@ -43,7 +43,7 @@ JNIEXPORT void Java_com_github_ma1co_openmemories_tweak_Backup_nativeWrite(JNIEn
     if ((*env)->GetArrayLength(env, data) != Backup_get_datasize(id))
         throw_exception(env, "Wrong array size");
     jbyte *data_ptr = (*env)->GetByteArrayElements(env, data, NULL);
-    int bytes_written = Backup_write(id, data_ptr);
+    int bytes_written = Backup_write(id >> 16, id, data_ptr);
     (*env)->ReleaseByteArrayElements(env, data, data_ptr, 0);
     if (bytes_written < 0)
         throw_exception(env, "Backup_write failed");
