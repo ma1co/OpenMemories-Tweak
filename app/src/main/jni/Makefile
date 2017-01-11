@@ -2,7 +2,9 @@
 #  BUILDDIR: Path to the build dir
 #  MAIN: Name of the executable
 
+# This executable will only be called on gen3 devices
 MODE = MAIN
+GEN = 3
 PLATFORMDIR = platform
 CSOURCES = main.c
 
