@@ -5,9 +5,9 @@ public class Shell {
         System.loadLibrary("tweak");
     }
 
-    private static native void nativeExec(String command);
+    private static native void nativeExec(String command) throws NativeException;
 
-    public static void exec(String command) {
+    public static void exec(String command) throws NativeException {
         nativeExec(command);
     }
 }

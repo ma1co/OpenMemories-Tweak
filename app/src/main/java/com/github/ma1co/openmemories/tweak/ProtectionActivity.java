@@ -107,9 +107,9 @@ public class ProtectionActivity extends ItemActivity {
     protected void writeProtectionNative(final boolean enabled) throws BackupProperty.BackupException {
         Logger.info("writeProtectionNative", "setting protection to " + enabled);
 
-        Shell.exec("/android" + getApplicationInfo().nativeLibraryDir + "/libbackupsetid1.so " + (enabled ? "1" : "0"));
-
         try {
+            Shell.exec("/android" + getApplicationInfo().nativeLibraryDir + "/libbackupsetid1.so " + (enabled ? "1" : "0"));
+
             Condition.waitFor(new Condition.Runnable() {
                 @Override
                 public boolean run() {

@@ -81,7 +81,9 @@ JNIEXPORT jbyteArray Java_com_github_ma1co_openmemories_tweak_Backup_nativeReadP
 JNIEXPORT void Java_com_github_ma1co_openmemories_tweak_Shell_nativeExec(JNIEnv *env, jclass clazz, jstring command)
 {
     const char *command_ptr = (*env)->GetStringUTFChars(env, command, NULL);
-    shell_exec_async(command_ptr);
+    int err = shell_exec_async(command_ptr);
+    if (err)
+        throw_exception(env, "shell_exec_async failed");
     (*env)->ReleaseStringUTFChars(env, command, command_ptr);
 }
 

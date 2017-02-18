@@ -79,11 +79,11 @@ public class DeveloperActivity extends ItemActivity {
                 return Procfs.findProcess(telnetStartCommand);
             }
 
-            private void enableTelnet() {
+            private void enableTelnet() throws NativeException {
                 Shell.exec(TextUtils.join(" ", telnetStartCommand));
             }
 
-            private void disableTelnet() {
+            private void disableTelnet() throws NativeException {
                 int pid = getTelnetPid();
                 if (pid != -1)
                     Shell.exec("kill -HUP " + pid + " $(ps -o pid= --ppid " + pid + ")");
@@ -100,7 +100,7 @@ public class DeveloperActivity extends ItemActivity {
             }
 
             @Override
-            public void setEnabled(final boolean enabled) throws InterruptedException, TimeoutException {
+            public void setEnabled(final boolean enabled) throws InterruptedException, NativeException, TimeoutException {
                 try {
                     Logger.info("TelnetAdapter.setEnabled", "setting telnetd to " + enabled);
                     if (enabled)
@@ -115,7 +115,7 @@ public class DeveloperActivity extends ItemActivity {
                         }
                     }, 500, 2000);
                     Logger.info("TelnetAdapter.setEnabled", "done");
-                } catch (InterruptedException | TimeoutException e) {
+                } catch (InterruptedException | NativeException | TimeoutException e) {
                     Logger.error("TelnetAdapter.setEnabled", e);
                     throw e;
                 }
