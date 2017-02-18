@@ -63,18 +63,16 @@ JNIEXPORT void Java_com_github_ma1co_openmemories_tweak_Backup_nativeSetId1(JNIE
 
 JNIEXPORT jbyteArray Java_com_github_ma1co_openmemories_tweak_Backup_nativeReadPresetData(JNIEnv *env, jclass clazz)
 {
-    backup_senser_preset_data_status status;
-    int err = backup_senser_cmd_preset_data_status(&status);
-    if (err)
-        throw_exception(env, "backup_senser_cmd_preset_data_status failed");
+    size_t size = BACKUP_SENSER_PRESET_DATA_MAX_SIZE;
+    char buffer[size];
 
-    jbyteArray res = (*env)->NewByteArray(env, status.size);
-    jbyte *res_ptr = (*env)->GetByteArrayElements(env, res, NULL);
-
-    err = backup_senser_cmd_preset_data_read(1, res_ptr, status.size);
+    int err = backup_senser_cmd_preset_data_read(1, buffer, &size);
     if (err)
         throw_exception(env, "backup_senser_cmd_preset_data_read failed");
 
+    jbyteArray res = (*env)->NewByteArray(env, size);
+    jbyte *res_ptr = (*env)->GetByteArrayElements(env, res, NULL);
+    memcpy(res_ptr, buffer, size);
     (*env)->ReleaseByteArrayElements(env, res, res_ptr, 0);
 
     return res;
