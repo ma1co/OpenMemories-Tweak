@@ -61,15 +61,6 @@ JNIEXPORT void Java_com_github_ma1co_openmemories_tweak_Backup_nativeSetId1(JNIE
         throw_exception(env, "backup_senser_cmd_ID1 failed");
 }
 
-JNIEXPORT jstring Java_com_github_ma1co_openmemories_tweak_Backup_nativeGetRegion(JNIEnv *env, jclass clazz)
-{
-    backup_senser_preset_data_status status;
-    int err = backup_senser_cmd_preset_data_status(&status);
-    if (err)
-        throw_exception(env, "backup_senser_cmd_preset_data_status failed");
-    return (*env)->NewStringUTF(env, status.region);
-}
-
 JNIEXPORT jbyteArray Java_com_github_ma1co_openmemories_tweak_Backup_nativeReadPresetData(JNIEnv *env, jclass clazz)
 {
     backup_senser_preset_data_status status;

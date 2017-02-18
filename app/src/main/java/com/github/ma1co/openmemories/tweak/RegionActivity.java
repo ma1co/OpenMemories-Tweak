@@ -88,8 +88,8 @@ public class RegionActivity extends ItemActivity {
             public Integer[] getOffValue() throws BackupProperty.BackupException {
                 String region;
                 try {
-                    region = Backup.getRegion();
-                } catch (NativeException e) {
+                    region = Backup.readData().getRegion();
+                } catch (IOException | NativeException e) {
                     Logger.error("LanguageAdapter.getOffValue", "error reading region", e);
                     throw new BackupProperty.BackupException("Cannot read region");
                 }
