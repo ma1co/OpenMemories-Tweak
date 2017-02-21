@@ -1,3 +1,5 @@
+import com.android.build.gradle.tasks.ExternalNativeBuildTask
+
 apply plugin: 'com.android.application'
 
 android {
@@ -10,8 +12,10 @@ android {
         targetSdkVersion 10
         versionCode "git -C ${projectDir} rev-list --first-parent --count HEAD".execute().text.trim().toInteger()
         versionName "git -C ${projectDir} describe --always --tags --dirty".execute().text.trim().replaceAll("^v", "")
-        ndk {
-            abiFilters 'armeabi'
+        externalNativeBuild {
+            ndkBuild {
+                abiFilters 'armeabi'
+            }
         }
     }
 
@@ -27,21 +31,34 @@ android {
     }
 
     packagingOptions {
+        // Whitelist for libraries
         pickFirst 'lib/armeabi/libtweak.so'
         pickFirst 'lib/armeabi/libbackupsetid1.so'
         exclude 'lib/armeabi/*.so'
     }
 
     sourceSets.main {
-        jniLibs.srcDir "$buildDir/binaries"
+        jniLibs.srcDir "$buildDir/libs"
     }
 }
 
 task runMake(type: Exec) {
-    // This will compile an executable that can be run outside the chrooted android environment.
-    // It's an executable and not a library, but we still name it lib*.so, so android will unpack it
-    // for us during installation and change the access rights to 777.
+    // This will compile the backupsetid1 executable that can be run outside the chrooted android
+    // environment
     executable = 'make'
-    args = ["-C", "$projectDir/src/main/jni", "BUILDDIR=$buildDir/binaries/armeabi", "MAIN=libbackupsetid1.so"]
+    args = ["-C", "$projectDir/src/main/jni", "BUILDDIR=$buildDir/platform"]
 }
-tasks.withType(com.android.build.gradle.tasks.ExternalNativeBuildTask) { it.dependsOn runMake }
+
+tasks.withType(ExternalNativeBuildTask) {
+    dependsOn runMake
+    doLast {
+        copy {
+            // Rename executables to lib*.so, so android will unpack them for us during installation
+            from files(
+                    "$buildDir/platform/backupsetid1",
+            )
+            into "$buildDir/libs/armeabi"
+            rename { fn -> "lib${fn}.so" }
+        }
+    }
+}

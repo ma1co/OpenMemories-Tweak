@@ -7,6 +7,7 @@ MODE = MAIN
 GEN = 3
 PLATFORMDIR = platform
 CSOURCES = main.c
+MAIN = backupsetid1
 
 .PHONY: all
 all: $(BUILDDIR)/$(MAIN)
