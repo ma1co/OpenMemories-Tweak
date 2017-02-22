@@ -15,6 +15,7 @@ android {
         externalNativeBuild {
             ndkBuild {
                 abiFilters 'armeabi'
+                targets 'tweak', 'adbd'
             }
         }
     }
@@ -34,6 +35,7 @@ android {
         // Whitelist for libraries
         pickFirst 'lib/armeabi/libtweak.so'
         pickFirst 'lib/armeabi/libbackupsetid1.so'
+        pickFirst 'lib/armeabi/libadbd.so'
         exclude 'lib/armeabi/*.so'
     }
 
@@ -56,6 +58,7 @@ tasks.withType(ExternalNativeBuildTask) {
             // Rename executables to lib*.so, so android will unpack them for us during installation
             from files(
                     "$buildDir/platform/backupsetid1",
+                    new File(objFolder, "armeabi/adbd"),
             )
             into "$buildDir/libs/armeabi"
             rename { fn -> "lib${fn}.so" }

@@ -127,6 +127,61 @@ public class DeveloperActivity extends ItemActivity {
             }
         });
 
+        addSwitch("Enable ADB", new SwitchItem.Adapter() {
+            private String[] adbStartCommand = { getApplicationInfo().nativeLibraryDir + "/libadbd.so" };
+
+            private int getAdbPid() {
+                return Procfs.findProcess(adbStartCommand);
+            }
+
+            private void enableAdb() throws NativeException {
+                Shell.execAndroid(TextUtils.join(" ", adbStartCommand) + " &");
+            }
+
+            private void disableAdb() throws NativeException {
+                int pid = getAdbPid();
+                if (pid != -1)
+                    Shell.exec("kill -HUP " + pid);
+            }
+
+            @Override
+            public boolean isAvailable() {
+                return true;
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return getAdbPid() != -1;
+            }
+
+            @Override
+            public void setEnabled(final boolean enabled) throws InterruptedException, NativeException, TimeoutException {
+                try {
+                    Logger.info("AdbAdapter.setEnabled", "setting adbd to " + enabled);
+                    if (enabled)
+                        enableAdb();
+                    else
+                        disableAdb();
+
+                    Condition.waitFor(new Condition.Runnable() {
+                        @Override
+                        public boolean run() {
+                            return isEnabled() == enabled;
+                        }
+                    }, 500, 2000);
+                    Logger.info("AdbAdapter.setEnabled", "done");
+                } catch (InterruptedException | NativeException | TimeoutException e) {
+                    Logger.error("AdbAdapter.setEnabled", e);
+                    throw e;
+                }
+            }
+
+            @Override
+            public String getSummary() {
+                return isEnabled() ? "adbd running on port 5555" : "adbd stopped";
+            }
+        });
+
         addButton("Wifi settings", new ButtonItem.Adapter() {
             @Override
             public void click() {
