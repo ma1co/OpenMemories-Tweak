@@ -36,12 +36,22 @@ Does your camera show you the NTSC nag screen on every startup? Disable the PAL 
 Use this option only if you're asked to do so. Some of the above settings may fail because your settings file is locked. Disable the protection here. In practice, it should only matter to this app if your settings are protected or not. Otherwise, this won't change anything. We still recommend re-enabling protection after you're done tweaking your settings.
 
 ### Developer
-Run a telnet daemon and connect to it via wifi.
+#### Wifi
+Check the "Enable Wifi" checkbox to permanently connect the camera to your wifi access point. Make sure to disable wifi again before you turn off the camera, otherwise it might crash.
 
-#### Run an Android shell
+Don't forget to increase the "Power save start time" in the menu, or the camera may turn off automatically after a few minutes.
+
+Once wifi is enabled, you can run and connect to the following daemons:
+
+#### Telnet
+To get a root shell on your camera, check the "Enable Telnet" checkbox. This starts a telnet daemon listening on port 23. Connect to it via wifi.
+
+A few special commands you can run:
+
+##### To run an Android shell
     android_console.sh
 
-#### Dump firmware to sdcard
+##### To dump the firmware to the sdcard
 On Android 2:
 
     dd if=/dev/nflasha of=/android/mnt/sdcard/DUMP.DAT bs=1M
@@ -51,6 +61,11 @@ On Android 4:
     dd if=/dev/nflasha of=/android/storage/sdcard0/DUMP.DAT bs=1M
 
 This operation will take some time (it copies about 500MB). Use [fwtool.py](https://github.com/ma1co/fwtool.py) to unpack the dump file.
+
+#### ADB
+To install and debug Android apps from your computer, check the "Enable ADB" checkbox. This starts an ADB daemon listening on port 5555. Connect to it via wifi:
+
+    adb connect <your camera's ip>
 
 ## FAQ
 ### How does it all work?
