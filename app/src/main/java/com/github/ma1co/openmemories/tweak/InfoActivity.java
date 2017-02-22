@@ -1,5 +1,6 @@
 package com.github.ma1co.openmemories.tweak;
 
+import android.os.Build;
 import android.os.Bundle;
 
 import java.io.IOException;
@@ -70,6 +71,18 @@ public class InfoActivity extends ItemActivity {
             @Override
             public String getValue() {
                 return BuildConfig.VERSION_NAME;
+            }
+        });
+
+        addLoggedInfo("Android version", new InfoItem.Adapter() {
+            @Override
+            public boolean isAvailable() {
+                return true;
+            }
+
+            @Override
+            public String getValue() {
+                return Build.VERSION.RELEASE + " (SDK " + Build.VERSION.SDK_INT + ")";
             }
         });
 
