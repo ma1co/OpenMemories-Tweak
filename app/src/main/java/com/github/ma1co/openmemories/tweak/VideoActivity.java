@@ -33,7 +33,7 @@ public class VideoActivity extends ItemActivity {
             }
         });
 
-        addSwitch("Disable 4K video recording limit", new BackupSwitchAdapter<Integer>(BackupKeys.REC_LIMIT_4K, true) {
+        addSwitch("Disable 4K video recording limit (RX100M4 only)", new BackupSwitchAdapter<Integer>(BackupKeys.REC_LIMIT_4K, true) {
             @Override
             public Integer getOffValue() throws BackupProperty.BackupException {
                 // 5m00s

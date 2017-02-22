@@ -136,6 +136,18 @@ public class ItemActivity extends BaseActivity {
         }
     }
 
+    public static class LabelItem extends BaseItem {
+        private TextView textView;
+
+        public LabelItem(Context context, String text) {
+            super(context);
+            inflate(context, R.layout.view_label, this);
+            textView = (TextView) findViewById(R.id.text);
+
+            textView.setText(text);
+        }
+    }
+
     private ViewGroup containerView;
 
     @Override
@@ -176,5 +188,9 @@ public class ItemActivity extends BaseActivity {
 
     protected BaseItem addInfo(String title, InfoItem.Adapter adapter) {
         return addItem(new InfoItem(this, title, adapter));
+    }
+
+    protected BaseItem addLabel(String text) {
+        return addItem(new LabelItem(this, text));
     }
 }
