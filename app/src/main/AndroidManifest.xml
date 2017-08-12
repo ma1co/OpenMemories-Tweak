@@ -22,8 +22,8 @@
 
         <receiver android:name=".DisableWiFiOnSuspend">
             <intent-filter>
-                <action android:name="com.android.server.DAConnectionManagerService.action.LAUNCH_ACTIVITY_ON_SUSPEND"/>
-                <category android:name="com.android.server.DAConnectionManagerService.category.LAUNCH_ACTIVITY_ON_SUSPEND"/>
+                <action android:name="com.android.server.SyncAndroidService.SUSPEND"/>
+                <category android:name="com.android.server.SyncAndroidService.SUSPEND"/>
             </intent-filter>
         </receiver>
     </application>
