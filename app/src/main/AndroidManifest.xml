@@ -19,6 +19,13 @@
         <activity android:name=".RegionActivity" android:theme="@style/BaseTheme" />
         <activity android:name=".ProtectionActivity" android:theme="@style/BaseTheme" />
         <activity android:name=".DeveloperActivity" android:theme="@style/BaseTheme" />
+
+        <receiver android:name=".DisableWiFiOnSuspend">
+            <intent-filter>
+                <action android:name="com.android.server.SyncAndroidService.SUSPEND"/>
+                <category android:name="com.android.server.SyncAndroidService.SUSPEND"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

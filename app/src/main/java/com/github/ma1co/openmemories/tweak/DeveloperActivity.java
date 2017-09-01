@@ -72,8 +72,6 @@ public class DeveloperActivity extends ItemActivity {
             }
         });
 
-        addLabel("Please disable Wifi before switching off the camera");
-
         addSwitch("Enable Telnet", new SwitchItem.Adapter() {
             private final String[] telnetStartCommand = new String[] { "busybox", "telnetd", "-l", "sh" };
 
