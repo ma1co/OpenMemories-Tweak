@@ -9,7 +9,7 @@ include $(LOCAL_PATH)/$(PLATFORMDIR)/vars.mk
 $(foreach lib, $(LIBS), \
     $(eval include $(CLEAR_VARS)) \
     $(eval LOCAL_MODULE := $(lib)) \
-    $(eval LOCAL_SRC_FILES := $(PLATFORMDIR)/$(DRIVERDIR)/$(lib).c) \
+    $(eval LOCAL_SRC_FILES := $(wildcard $(addprefix $(LOCAL_PATH)/$(PLATFORMDIR)/$(DRIVERDIR)/$(lib), .c .cpp))) \
     $(eval LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(PLATFORMDIR)) \
     $(eval LOCAL_CFLAGS += $(DEFS) $(WFLAGS) -std=c11) \
     $(eval LOCAL_LDFLAGS += $(LFLAGS)) \
@@ -19,9 +19,12 @@ $(foreach lib, $(LIBS), \
 # Compile libtweak.so
 include $(CLEAR_VARS)
 LOCAL_MODULE := tweak
-LOCAL_SRC_FILES := jni.c $(SOURCES)
+LOCAL_SRC_FILES := jni.c $(foreach source, $(SOURCES), $(wildcard $(addprefix $(LOCAL_PATH)/$(source), .c .cpp)))
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(PLATFORMDIR)
-LOCAL_CFLAGS += $(DEFS) $(WFLAGS) -std=c11
+LOCAL_CFLAGS += $(DEFS) $(WFLAGS) -fvisibility=hidden
+LOCAL_CONLYFLAGS += -std=c11
+LOCAL_CPPFLAGS += -std=c++98 -Wno-vla -fexceptions
+LOCAL_LDFLAGS += -Wl,-gc-sections -Wl,-exclude-libs,ALL
 LOCAL_SHARED_LIBRARIES := $(LIBS)
 include $(BUILD_SHARED_LIBRARY)
 

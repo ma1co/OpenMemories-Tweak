@@ -25,7 +25,7 @@ public class DeveloperActivity extends ItemActivity {
         super.onCreate(savedInstanceState);
 
         connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
         wifiSwitch = addSwitch("Enable Wifi", new SwitchItem.Adapter() {
             @Override
@@ -128,7 +128,7 @@ public class DeveloperActivity extends ItemActivity {
         });
 
         addSwitch("Enable ADB", new SwitchItem.Adapter() {
-            private String[] adbStartCommand = { getApplicationInfo().nativeLibraryDir + "/libadbd.so" };
+            private final String[] adbStartCommand = { getApplicationInfo().nativeLibraryDir + "/libadbd.so" };
 
             private int getAdbPid() {
                 return Procfs.findProcess(adbStartCommand);

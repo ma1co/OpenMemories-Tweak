@@ -6,7 +6,7 @@
 MODE = MAIN
 GEN = 3
 PLATFORMDIR = platform
-CSOURCES = main.c
+CSOURCES = main
 MAIN = backupsetid1
 
 .PHONY: all
