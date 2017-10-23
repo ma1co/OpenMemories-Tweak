@@ -63,9 +63,11 @@ public class ItemActivity extends BaseActivity {
         @Override
         public void update() {
             boolean available = adapter.isAvailable();
+            boolean enabled = available && adapter.isEnabled();
+            String summary = available ? adapter.getSummary() : "";
             checkBox.setEnabled(available);
-            checkBox.setChecked(available && adapter.isEnabled());
-            summaryView.setText(available ? adapter.getSummary() : "(not available)");
+            checkBox.setChecked(enabled);
+            summaryView.setText(!available ? "(not available)" : !"".equals(summary) ? summary : enabled ? "Enabled" : "Disabled");
         }
 
         private void showError(Exception e) {

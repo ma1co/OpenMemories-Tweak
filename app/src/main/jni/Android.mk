@@ -19,12 +19,12 @@ $(foreach lib, $(LIBS), \
 # Compile libtweak.so
 include $(CLEAR_VARS)
 LOCAL_MODULE := tweak
-LOCAL_SRC_FILES := jni.c $(foreach source, $(SOURCES), $(wildcard $(addprefix $(LOCAL_PATH)/$(source), .c .cpp)))
+LOCAL_SRC_FILES := jni.cpp $(foreach source, $(SOURCES), $(wildcard $(addprefix $(LOCAL_PATH)/$(source), .c .cpp)))
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(PLATFORMDIR)
 LOCAL_CFLAGS += $(DEFS) $(WFLAGS) -fvisibility=hidden
 LOCAL_CONLYFLAGS += -std=c11
-LOCAL_CPPFLAGS += -std=c++98 -Wno-vla -fexceptions
-LOCAL_LDFLAGS += -Wl,-gc-sections -Wl,-exclude-libs,ALL
+LOCAL_CPPFLAGS += -std=c++98 -Wno-vla -Wno-variadic-macros -fexceptions
+LOCAL_LDFLAGS += -Wl,--gc-sections -Wl,--exclude-libs,ALL
 LOCAL_SHARED_LIBRARIES := $(LIBS)
 include $(BUILD_SHARED_LIBRARY)
 
