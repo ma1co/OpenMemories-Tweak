@@ -107,13 +107,7 @@ public class DeveloperActivity extends ItemActivity {
                         enableTelnet();
                     else
                         disableTelnet();
-
-                    Condition.waitFor(new Condition.Runnable() {
-                        @Override
-                        public boolean run() {
-                            return isEnabled() == enabled;
-                        }
-                    }, 500, 2000);
+                    Condition.waitFor(() -> isEnabled() == enabled, 500, 2000);
                     Logger.info("TelnetAdapter.setEnabled", "done");
                 } catch (InterruptedException | NativeException | TimeoutException e) {
                     Logger.error("TelnetAdapter.setEnabled", e);
@@ -162,13 +156,7 @@ public class DeveloperActivity extends ItemActivity {
                         enableAdb();
                     else
                         disableAdb();
-
-                    Condition.waitFor(new Condition.Runnable() {
-                        @Override
-                        public boolean run() {
-                            return isEnabled() == enabled;
-                        }
-                    }, 500, 2000);
+                    Condition.waitFor(() -> isEnabled() == enabled, 500, 2000);
                     Logger.info("AdbAdapter.setEnabled", "done");
                 } catch (InterruptedException | NativeException | TimeoutException e) {
                     Logger.error("AdbAdapter.setEnabled", e);
@@ -182,12 +170,7 @@ public class DeveloperActivity extends ItemActivity {
             }
         });
 
-        addButton("Wifi settings", new ButtonItem.Adapter() {
-            @Override
-            public void click() {
-                onSettingsButtonClicked();
-            }
-        });
+        addButton("Wifi settings", this::onSettingsButtonClicked);
 
         receiver = new BroadcastReceiver() {
             @Override

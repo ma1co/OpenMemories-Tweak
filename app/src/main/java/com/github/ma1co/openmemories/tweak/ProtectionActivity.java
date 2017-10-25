@@ -25,13 +25,7 @@ public class ProtectionActivity extends ItemActivity {
 
                 try {
                     Shell.exec("/android" + getApplicationInfo().nativeLibraryDir + "/libbackupsetid1.so " + (enabled ? "0" : "1"));
-
-                    Condition.waitFor(new Condition.Runnable() {
-                        @Override
-                        public boolean run() {
-                            return isEnabled() == enabled;
-                        }
-                    }, 500, 5000);
+                    Condition.waitFor(() -> isEnabled() == enabled, 500, 5000);
                 } catch (Exception e) {
                     Logger.error("writeProtectionNative", "waitFor failed");
                     throw new NativeException("Failed to set backup protection (native)");
