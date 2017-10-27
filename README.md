@@ -2,9 +2,11 @@
 An app to unlock settings on your Sony camera.
 * Remove the 30min video recording limit
 * Unlock the language menu
+* Disable the NTSC nag screen
+* For developers: Enable telnet and adb daemons
 
 ## Installation
-Install it here: [sony-pmca.appspot.com](https://sony-pmca.appspot.com/apps) (Only Internet Explorer and Safari are supported)
+Please read [this section](https://github.com/ma1co/Sony-PMCA-RE#installing-android-apps) for up-to-date information on installing the app.
 
 ## Compatibility
 This app should be compatible with all Sony cameras supporting PlayMemories Camera Apps (PMCA). See [here](https://github.com/ma1co/OpenMemories-Framework/blob/master/docs/Cameras.md) for a full list.
@@ -37,7 +39,7 @@ Use this option only if you're asked to do so. Some of the above settings may fa
 
 ### Developer
 #### Wifi
-Check the "Enable Wifi" checkbox to permanently connect the camera to your wifi access point. Make sure to disable wifi again before you turn off the camera, otherwise it might crash.
+Check the "Enable Wifi" checkbox to permanently connect the camera to your wifi access point.
 
 Don't forget to increase the "Power save start time" in the menu, or the camera may turn off automatically after a few minutes.
 
@@ -74,9 +76,6 @@ To install and debug Android apps from your computer, check the "Enable ADB" che
 ### It doesn't work for me!
 First, thanks for testing. If you encounter a bug, please open an issue!
 
-### I don't have Internet Explorer
-Well, lucky you :) You can try the experimental [installer](https://github.com/ma1co/Sony-PMCA-RE#local-installer) (releases for Windows and OS X are provided).
-
 ### How can I remove the app?
 You can uninstall it normally with the "Application Management" app. The modified settings are preserved even if you remove the app.
 
@@ -87,7 +86,7 @@ Some settings might be removed, others will be permanent. We still have to inves
 See above.
 
 ### I have an old camera that doesn't support apps
-For now, you're out of luck. We can only run code on our cameras through the Android subsystem. For older cameras, you'd have to patch a firmware image with your settings. There is also a USB service mode (senser / adjust mode) which sadly we haven't managed to trigger (yet).
+Depending on your camera, tweaks may be applied using a method based on the firmware update process: [More information](https://github.com/ma1co/Sony-PMCA-RE#tweaking-camera-settings)
 
 ### Can you add feature X?
 Keep in mind that this app can only change settings that are already there and just hidden by Sony. However, there are still about 15 000 entries in the settings file. So finding out what a particular setting does is quite an effort. But if you have ideas, feel free to open an issue!
