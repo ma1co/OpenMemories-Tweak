@@ -33,7 +33,7 @@ android {
     packagingOptions {
         // Whitelist for libraries
         pickFirst 'lib/armeabi/libtweak.so'
-        pickFirst 'lib/armeabi/libbackupsetid1.so'
+        pickFirst 'lib/armeabi/libprotectiontweak.so'
         pickFirst 'lib/armeabi/libadbd.so'
         exclude 'lib/armeabi/*.so'
     }
@@ -56,7 +56,7 @@ tasks.withType(ExternalNativeBuildTask) {
         copy {
             // Rename executables to lib*.so, so android will unpack them for us during installation
             from files(
-                    "$buildDir/platform/backupsetid1",
+                    "$buildDir/platform/protectiontweak",
                     new File(objFolder, "armeabi/adbd"),
             )
             into "$buildDir/libs/armeabi"

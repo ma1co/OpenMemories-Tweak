@@ -24,7 +24,7 @@ public class ProtectionActivity extends ItemActivity {
                 Logger.info("writeProtectionNative", "setting protection unlock to " + enabled);
 
                 try {
-                    Shell.exec("/android" + getApplicationInfo().nativeLibraryDir + "/libbackupsetid1.so " + (enabled ? "0" : "1"));
+                    Shell.exec("/android" + getApplicationInfo().nativeLibraryDir + "/libprotectiontweak.so " + (enabled ? "1" : "0"));
                     Condition.waitFor(() -> isEnabled() == enabled, 500, 5000);
                 } catch (Exception e) {
                     Logger.error("writeProtectionNative", "waitFor failed");
