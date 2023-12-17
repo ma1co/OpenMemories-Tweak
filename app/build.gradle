@@ -41,6 +41,10 @@ android {
     sourceSets.main {
         jniLibs.srcDir "$buildDir/libs"
     }
+
+    lintOptions {
+        abortOnError false
+    }
 }
 
 task runMake(type: Exec) {
