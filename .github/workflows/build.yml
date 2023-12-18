@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        submodules: 'recursive'
+        submodules: 'true'
     - name: Build the site in the gordianz/omt-build container
       run: |
         docker run \
