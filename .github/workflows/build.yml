@@ -1,0 +1,27 @@
+name: Build APK in docker
+
+on:
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'true'
+    - name: Build the site in the gordianz/omt-build container
+      run: |
+        docker run \
+        -v ${{ github.workspace }}:/Code \
+        gordianz/omt-build:latest
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: APK
+        path: ${{ github.workspace }}/app/build/outputs/apk/debug/app-debug.apk
