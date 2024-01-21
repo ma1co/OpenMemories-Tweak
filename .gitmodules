@@ -1,6 +1,6 @@
 [submodule "app/src/main/jni/platform"]
 	path = app/src/main/jni/platform
-	url = https://github.com/ma1co/OpenMemories-Platform
+	url = https://github.com/GordianZ/OpenMemories-Platform
 [submodule "app/src/main/jni/android_platform_system_core"]
 	path = app/src/main/jni/android_platform_system_core
 	url = https://android.googlesource.com/platform/system/core
