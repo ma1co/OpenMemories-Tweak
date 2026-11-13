@@ -102,7 +102,9 @@ def platformBuild = tasks.register('platformBuild', Exec) {
     inputs.dir jniDir
     outputs.dir platformOutDir
     executable = 'make'
-    args '-C', jniDir.path, "BUILDDIR=${platformOutDir.get().asFile}"
+    // GCC 5 and newer use a new std::string ABI by default, which is not supported by libstdc++ 6.0.14 on the
+    // cameras. Older compilers ignore this define.
+    args '-C', jniDir.path, "BUILDDIR=${platformOutDir.get().asFile}", 'CXX=arm-linux-gnueabi-g++ -D_GLIBCXX_USE_CXX11_ABI=0'
 }
 
 // Newest symbol versions of the libraries on the cameras (glibc 2.11.2, libstdc++ 6.0.14, libgcc_s), see
