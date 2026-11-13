@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- BaseActivity starts the camera's launcher (ACTION_MAIN + CATEGORY_HOME) when the menu key is pressed.
+         MainActivity doesn't have CATEGORY_HOME, so the intent doesn't match it. -->
+    <issue id="UnsafeImplicitIntentLaunch">
+        <ignore path="src/main/java/com/github/ma1co/openmemories/tweak/BaseActivity.java" />
+    </issue>
+</lint>

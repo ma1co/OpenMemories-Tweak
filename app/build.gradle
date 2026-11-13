@@ -1,66 +1,161 @@
-import com.android.build.gradle.tasks.ExternalNativeBuildTask
+plugins {
+    id 'com.android.application'
+}
 
-apply plugin: 'com.android.application'
+def gitOutput = { String... args ->
+    providers.exec { commandLine(['git', '-C', projectDir.path] + args.toList()) }.standardOutput.asText.get().trim()
+}
 
 android {
-    compileSdkVersion 10
+    namespace = 'com.github.ma1co.openmemories.tweak'
+    compileSdk = 35
 
     defaultConfig {
-        applicationId 'com.github.ma1co.openmemories.tweak'
-        minSdkVersion 10
-        targetSdkVersion 10
-        versionCode "git -C ${projectDir} rev-list --first-parent --count HEAD".execute().text.trim().toInteger()
-        versionName "git -C ${projectDir} describe --always --tags --dirty".execute().text.trim().replaceAll("^v", "")
-        externalNativeBuild {
-            ndkBuild {
-                abiFilters 'armeabi'
-                targets 'tweak', 'adbd'
-            }
-        }
+        applicationId = 'com.github.ma1co.openmemories.tweak'
+        // Cameras run Android 2.3.7 (API 10) or Android 4.1.2 (API 16). Newer APIs can be used behind a check of
+        // Build.VERSION.SDK_INT, lint reports unchecked calls (NewApi).
+        minSdk = 10
+        // Keep the old behavior on all cameras (e.g. the menu key)
+        //noinspection ExpiredTargetSdkVersion
+        targetSdk = 10
+        versionCode = gitOutput('rev-list', '--first-parent', '--count', 'HEAD').toInteger()
+        versionName = gitOutput('describe', '--always', '--tags', '--dirty').replaceAll('^v', '')
+    }
+
+    buildFeatures {
+        // BuildConfig.VERSION_NAME is shown in the info tab
+        buildConfig = true
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    externalNativeBuild {
-        ndkBuild {
-            path 'src/main/jni/Android.mk'
+    lint {
+        // The app is installed on cameras, not distributed through Google Play
+        disable += ['ExpiredTargetSdkVersion', 'OldTargetApi']
+    }
+
+    packaging {
+        jniLibs {
+            // The executables are packaged as lib*.so, so they have to be extracted on installation
+            useLegacyPackaging = true
+            // Stripped by stripNativeLibs below
+            keepDebugSymbols += '**/*.so'
         }
     }
 
-    packagingOptions {
-        // Whitelist for libraries
-        pickFirst 'lib/armeabi/libtweak.so'
-        pickFirst 'lib/armeabi/libprotectiontweak.so'
-        pickFirst 'lib/armeabi/libadbd.so'
-        exclude 'lib/armeabi/*.so'
-    }
-
-    sourceSets.main {
-        jniLibs.srcDir "$buildDir/libs"
-    }
+    sourceSets.main.jniLibs.srcDir(layout.buildDirectory.dir('jniLibs'))
 }
 
-task runMake(type: Exec) {
-    // This will compile the backupsetid1 executable that can be run outside the chrooted android
-    // environment
+
+// Native code
+// The cameras run Android 2.3.7 (API 10, some only support armeabi) or Android 4.1.2 (API 16). This needs
+// NDK r14b, the last version supporting armeabi, android-9, GCC 4.9 and stlport. Current versions of the
+// Android Gradle plugin no longer support such an old NDK, so ndk-build is run directly.
+// Set its path in local.properties (openmemories.ndk.dir=...) or in the environment (OPENMEMORIES_NDK_DIR).
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { localProperties.load(it) }
+}
+def ndkDirProvider = providers.provider {
+    def path = localProperties.getProperty('openmemories.ndk.dir') ?: System.getenv('OPENMEMORIES_NDK_DIR')
+    if (!path) {
+        throw new GradleException('Android NDK r14b not found. Set openmemories.ndk.dir in local.properties or OPENMEMORIES_NDK_DIR.')
+    }
+    def dir = file(path)
+    def props = new File(dir, 'source.properties')
+    if (!props.isFile() || !props.text.contains('Pkg.Revision = 14.')) {
+        throw new GradleException("${dir} is not Android NDK r14b")
+    }
+    dir
+}
+
+def jniDir = file('src/main/jni')
+def ndkOutDir = layout.buildDirectory.dir('ndk')
+def platformOutDir = layout.buildDirectory.dir('platform')
+def jniLibsDir = layout.buildDirectory.dir('jniLibs/armeabi')
+
+def ndkBuild = tasks.register('ndkBuild', Exec) {
+    // Build libtweak.so and the adbd executable for Android
+    inputs.dir jniDir
+    outputs.dir ndkOutDir
+    doFirst {
+        executable = new File(ndkDirProvider.get(), 'ndk-build').path
+    }
+    args 'NDK_PROJECT_PATH=null',
+        "APP_BUILD_SCRIPT=${new File(jniDir, 'Android.mk')}",
+        "NDK_APPLICATION_MK=${new File(jniDir, 'Application.mk')}",
+        'APP_ABI=armeabi', 'NDK_ALL_ABIS=armeabi', 'NDK_DEBUG=0',
+        "NDK_OUT=${ndkOutDir.get().dir('obj').asFile}",
+        "NDK_LIBS_OUT=${ndkOutDir.get().dir('lib').asFile}",
+        "-j${Runtime.runtime.availableProcessors()}",
+        'tweak', 'adbd'
+}
+
+def platformBuild = tasks.register('platformBuild', Exec) {
+    // Build the protectiontweak executable that runs outside of the chrooted Android environment.
+    // Needs arm-linux-gnueabi-gcc (see the README).
+    inputs.dir jniDir
+    outputs.dir platformOutDir
     executable = 'make'
-    args = ["-C", "$projectDir/src/main/jni", "BUILDDIR=$buildDir/platform"]
+    args '-C', jniDir.path, "BUILDDIR=${platformOutDir.get().asFile}"
 }
 
-tasks.withType(ExternalNativeBuildTask) {
-    dependsOn runMake
+// Newest symbol versions of the libraries on the cameras (glibc 2.11.2, libstdc++ 6.0.14, libgcc_s), see
+// lib/ in the firmware of ILCE-5000, ILCE-5100, ILCE-6000, ILCE-7M2 and ILCE-7RM2
+def cameraLibraryVersions = [GLIBC: '2.12', GLIBCXX: '3.4.14', CXXABI: '1.3.4', GCC: '4.3.0']
+
+def compareVersions = { String a, String b ->
+    def x = a.tokenize('.')*.toInteger()
+    def y = b.tokenize('.')*.toInteger()
+    for (int i = 0; i < Math.max(x.size(), y.size()); i++) {
+        def c = (i < x.size() ? x[i] : 0) <=> (i < y.size() ? y[i] : 0)
+        if (c != 0) return c
+    }
+    0
+}
+
+def stripNativeLibs = tasks.register('stripNativeLibs') {
+    dependsOn ndkBuild, platformBuild
+    inputs.dir ndkOutDir
+    inputs.dir platformOutDir
+    outputs.dir jniLibsDir
     doLast {
-        copy {
-            // Rename executables to lib*.so, so android will unpack them for us during installation
-            from files(
-                    "$buildDir/platform/protectiontweak",
-                    new File(objFolder, "armeabi/adbd"),
-            )
-            into "$buildDir/libs/armeabi"
-            rename { fn -> "lib${fn}.so" }
+        def bin = new File(ndkDirProvider.get(), 'toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin')
+        def strip = new File(bin, 'arm-linux-androideabi-strip').path
+        def readelf = new File(bin, 'arm-linux-androideabi-readelf').path
+        def out = jniLibsDir.get().asFile
+        out.deleteDir()
+        out.mkdirs()
+
+        // Rename executables to lib*.so, so android will unpack them for us during installation
+        def files = [
+            'libtweak.so': ndkOutDir.get().file('obj/local/armeabi/libtweak.so').asFile,
+            'libadbd.so': ndkOutDir.get().file('obj/local/armeabi/adbd').asFile,
+            'libprotectiontweak.so': platformOutDir.get().file('protectiontweak').asFile,
+        ]
+        files.each { name, source ->
+            def target = new File(out, name)
+            providers.exec { commandLine strip, '--strip-unneeded', '-o', target.path, source.path }.result.get()
+        }
+
+        // protectiontweak is linked against the libraries of the camera. Make sure the compiler didn't add
+        // references to newer symbol versions, otherwise it fails to start.
+        def versionInfo = providers.exec { commandLine readelf, '-V', files['libprotectiontweak.so'].path }.standardOutput.asText.get()
+        def tooNew = (versionInfo =~ /Name: (GLIBC|GLIBCXX|CXXABI|GCC)_([0-9.]+)/).collect { [it[1], it[2]] }
+            .findAll { lib, version -> compareVersions(version, cameraLibraryVersions[lib]) > 0 }
+            .collect { lib, version -> "${lib}_${version}" }.unique()
+        if (tooNew) {
+            throw new GradleException("protectiontweak needs ${tooNew.join(', ')}, which is not available on the cameras. " +
+                'Use an older arm-linux-gnueabi toolchain (see the README).')
         }
     }
+}
+
+tasks.named('preBuild') {
+    dependsOn stripNativeLibs
 }
