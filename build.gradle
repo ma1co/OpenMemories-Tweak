@@ -1,15 +1,3 @@
-buildscript {
-    repositories {
-        jcenter()
-        google()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.1'
-    }
-}
-
-allprojects {
-    repositories {
-        jcenter()
-    }
+plugins {
+    id 'com.android.application' version '8.13.2' apply false
 }
